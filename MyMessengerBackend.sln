@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetworkModule", "NetworkModule\NetworkModule.csproj", "{FE06B7CD-1521-454E-AA87-68D6449AE0FF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D9DDA47E-BA9A-46A0-850D-F7C341A475E0} = {D9DDA47E-BA9A-46A0-850D-F7C341A475E0}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyMessengerProtocol", "MyMessengerProtocol\MyMessengerProtocol.csproj", "{D9DDA47E-BA9A-46A0-850D-F7C341A475E0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FE06B7CD-1521-454E-AA87-68D6449AE0FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE06B7CD-1521-454E-AA87-68D6449AE0FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE06B7CD-1521-454E-AA87-68D6449AE0FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE06B7CD-1521-454E-AA87-68D6449AE0FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9DDA47E-BA9A-46A0-850D-F7C341A475E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9DDA47E-BA9A-46A0-850D-F7C341A475E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9DDA47E-BA9A-46A0-850D-F7C341A475E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9DDA47E-BA9A-46A0-850D-F7C341A475E0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CBC1B97D-CEEB-4F0A-8140-95217A8F6F34}
+	EndGlobalSection
+EndGlobal

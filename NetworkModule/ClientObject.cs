@@ -44,7 +44,10 @@ namespace MyMessengerBackend.NetworkModule
 
                         bytes = stream.Read(data, 0, data.Length);
 
-                        clientRecognizer.Process(data, bytes);
+                        if(clientRecognizer.Process(data, bytes))
+                        {
+                            stream.Write(clientRecognizer.Response, 0, clientRecognizer.Response.Length);
+                        }
 
 
                     }

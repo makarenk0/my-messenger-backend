@@ -45,7 +45,6 @@ namespace MyMessengerBackend.NetworkModule
                 {
                     Console.WriteLine("Waiting for clients...");
                     //Socket client = _listener.Accept();
-                    //Socket client = _listener.Accept();
                     TcpClient client = _listener.AcceptTcpClient();
                     ClientObject clientObject = new ClientObject(client);
 

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Configuration;
+using System.Collections.Specialized;
 
 namespace MyMessengerBackend.MyMessengerProtocol
 {
@@ -6,7 +8,10 @@ namespace MyMessengerBackend.MyMessengerProtocol
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+
+            string appSettings = ConfigurationManager.AppSettings["AES_KEY_LENGTH"];
+        
+            Console.WriteLine(appSettings);
         }
     }
 }

@@ -38,11 +38,12 @@ namespace MyMessengerBackend.MyMessengerProtocol
         private byte[] FormPacketAndProcess()
         {
             byte[] bytesPayload = _applicationPacket.Skip(1).Take(_applicationPacket.Count - 2).ToArray();
-            String payloadBase64 = Encoding.UTF8.GetString(bytesPayload);
-            Packet arrived = new Packet(Convert.ToChar(_applicationPacket[0]), Convert.FromBase64String(payloadBase64));
+            String payloadBase64 = Encoding.ASCII.GetString(bytesPayload);
+            Packet arrived = new Packet(Convert.ToChar(_applicationPacket[0]), payloadBase64);
 
             Packet response = _pktProcessor.Process(arrived);
             _applicationPacket.Clear();
+            
             return response.GetBytesForm();
         }
     }

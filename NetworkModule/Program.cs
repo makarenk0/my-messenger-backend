@@ -10,8 +10,8 @@ namespace MyMessengerBackend.NetworkModule
     {
         private const int PORT = 20; // receving port
 
-        //private const string IP_ADDRESS = "192.168.1.19";
-         private const string IP_ADDRESS = "10.156.0.2";  // private ip (google cloud machine)
+        private const string IP_ADDRESS = "192.168.1.19";
+        // private const string IP_ADDRESS = "10.156.0.2";  // private ip (google cloud machine)
 
         static void Main(string[] args)
         {

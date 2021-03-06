@@ -5,16 +5,19 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Runtime.InteropServices;
+using MyMessengerProtocol;
+using System.Configuration;
 
 namespace MyMessengerBackend.MyMessengerProtocol
 {
     class PacketProcessor
     {
-        private String _serverDerivedKey;
+        private AesBase64Wrapper _encryptionModule;
 
         public PacketProcessor()
         {
-
+            _encryptionModule = new AesBase64Wrapper(Int32.Parse(ConfigurationManager.AppSettings["AES_ITERATIONS_NUM"]), 
+                Int32.Parse(ConfigurationManager.AppSettings["AES_KEY_LENGTH"]));
         }
 
         public Packet Process(Packet packet)
@@ -24,7 +27,7 @@ namespace MyMessengerBackend.MyMessengerProtocol
                 case '0':
                     return InitDiffieHellman(packet);
                 case '1':
-
+                    return ProcessEncryptedPacket(packet);
                 default:
                     break;
             }
@@ -55,7 +58,7 @@ namespace MyMessengerBackend.MyMessengerProtocol
             String myPublicKeyBase64 = Convert.ToBase64String(myPublicKey);
 
 
-            String json = Encoding.ASCII.GetString(packet.Payload);
+            String json = Encoding.ASCII.GetString(Convert.FromBase64String(packet.Payload));
             PublicKeyPayload clientPublicKey = JsonSerializer.Deserialize<PublicKeyPayload>(json);
 
             byte[] otherKeyFromBase64 = Convert.FromBase64String(clientPublicKey.Public_key);
@@ -69,11 +72,10 @@ namespace MyMessengerBackend.MyMessengerProtocol
 
          
             byte[] derivedKey = eCDiffie.DeriveKeyMaterial(eCDiffie2.PublicKey);
-
-            String derivedKeyBase64 = Convert.ToBase64String(derivedKey);
-            _serverDerivedKey = derivedKeyBase64;
+            _encryptionModule.DerivedKey = derivedKey;
 
 #if DEBUG
+            String derivedKeyBase64 = Convert.ToBase64String(derivedKey);
             Console.WriteLine(String.Format("Derived key: {0}", derivedKeyBase64));
 #endif
 
@@ -82,7 +84,8 @@ namespace MyMessengerBackend.MyMessengerProtocol
             publicKey.Public_key = myPublicKeyBase64.Replace("\\u002B", "+");
             String publicKeyString = JsonSerializer.Serialize(publicKey);
 
-            return new Packet('0', Encoding.ASCII.GetBytes(publicKeyString));
+
+            return new Packet('0', Convert.ToBase64String(Encoding.ASCII.GetBytes(publicKeyString)));
         }
 
 
@@ -97,7 +100,7 @@ namespace MyMessengerBackend.MyMessengerProtocol
             String myPublicKeyBase64 = Convert.ToBase64String(myPublicKey);
 
 
-            String json = Encoding.ASCII.GetString(packet.Payload);
+            String json = Encoding.ASCII.GetString(Convert.FromBase64String(packet.Payload));
             PublicKeyPayload clientPublicKey = JsonSerializer.Deserialize<PublicKeyPayload>(json);
 
             byte[] otherKeyFromBase64 = Convert.FromBase64String(clientPublicKey.Public_key);
@@ -113,13 +116,11 @@ namespace MyMessengerBackend.MyMessengerProtocol
             byte[] otherKeyDecoded = eCDiffie2.PublicKey.ToByteArray();
             CngKey k = CngKey.Import(otherKeyDecoded, CngKeyBlobFormat.EccPublicBlob);
             byte[] derivedKey = eCDiffie.DeriveKeyMaterial(k);
-          
-
-            String derivedKeyBase64 = Convert.ToBase64String(derivedKey);
-            _serverDerivedKey = derivedKeyBase64;
+            _encryptionModule.DerivedKey = derivedKey;
 
 
 #if DEBUG
+            String derivedKeyBase64 = Convert.ToBase64String(derivedKey);
             Console.WriteLine(String.Format("Derived key: {0}", derivedKeyBase64));
 #endif
 
@@ -127,7 +128,18 @@ namespace MyMessengerBackend.MyMessengerProtocol
             publicKey.Public_key = myPublicKeyBase64.Replace("\\u002B", "+");
             String publicKeyString = JsonSerializer.Serialize(publicKey);
 
-            return new Packet('0', Encoding.ASCII.GetBytes(publicKeyString));
+            return new Packet('0', Convert.ToBase64String(Encoding.ASCII.GetBytes(publicKeyString)));
+        }
+
+
+        private Packet ProcessEncryptedPacket(Packet packet)
+        {
+            string decryptedPayload = _encryptionModule.DecodeAndDecrypt(packet.Payload);
+            Console.WriteLine(decryptedPayload);
+
+            string response = "Hello from encrypted server!!";
+            String encrypted = _encryptionModule.EncryptAndEncode(response);
+            return new Packet('1', encrypted);
         }
 
     }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Configuration;
 using System.Collections.Specialized;
 
-namespace MyMessengerProtocol
+namespace MyMessengerBackend.MyMessengerProtocol
 {
     class AesBase64Wrapper
     {

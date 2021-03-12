@@ -4,17 +4,23 @@ using System.Text;
 using System.Text.Json;
 using System.Runtime.InteropServices;
 using System.Configuration;
+using MyMessengerBackend.DatabaseModule;
 
 namespace MyMessengerBackend.MyMessengerProtocol
 {
     class PacketProcessor
     {
         private AesBase64Wrapper _encryptionModule;
+        private UserController _userController;
+        private MongoDbSettings _dbSettings;
 
         public PacketProcessor()
         {
             _encryptionModule = new AesBase64Wrapper(Int32.Parse(ConfigurationManager.AppSettings["AES_ITERATIONS_NUM"]), 
                 Int32.Parse(ConfigurationManager.AppSettings["AES_KEY_LENGTH"]));
+            _dbSettings = new MongoDbSettings();
+            _dbSettings.ConnectionString = ConfigurationManager.AppSettings["db_connection"];
+            _dbSettings.DatabaseName = ConfigurationManager.AppSettings["db_name"];
         }
 
         public Packet Process(Packet packet)
@@ -23,12 +29,9 @@ namespace MyMessengerBackend.MyMessengerProtocol
             {
                 case '0':
                     return InitDiffieHellman(packet);
-                case '1':
-                    return ProcessEncryptedPacket(packet);
                 default:
-                    break;
+                    return ProcessEncryptedPacket(packet);
             }
-            return null;
         }
 
         private Packet InitDiffieHellman(Packet packet)
@@ -125,6 +128,10 @@ namespace MyMessengerBackend.MyMessengerProtocol
             publicKey.Public_key = myPublicKeyBase64.Replace("\\u002B", "+");
             String publicKeyString = JsonSerializer.Serialize(publicKey);
 
+
+            _userController = new UserController(new MongoRepository<User>(_dbSettings));
+            Console.WriteLine(_userController.GetTest());
+
             return new Packet('0', Convert.ToBase64String(Encoding.ASCII.GetBytes(publicKeyString)));
         }
 
@@ -133,6 +140,9 @@ namespace MyMessengerBackend.MyMessengerProtocol
         {
             string decryptedPayload = _encryptionModule.DecodeAndDecrypt(packet.Payload);
             Console.WriteLine(decryptedPayload);
+
+
+
 
             string response = "Hello from encrypted server!!";
             String encrypted = _encryptionModule.EncryptAndEncode(response);

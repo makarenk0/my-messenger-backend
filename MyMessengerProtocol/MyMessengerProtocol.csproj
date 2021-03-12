@@ -10,4 +10,8 @@
     <PackageReference Include="System.Security.Cryptography.OpenSsl" Version="5.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DatabaseModule\DatabaseModule.csproj" />
+  </ItemGroup>
+
 </Project>

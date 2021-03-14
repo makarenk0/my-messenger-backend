@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DatabaseModule\DatabaseModule.csproj" />
+    <ProjectReference Include="..\ApplicationModule\ApplicationModule.csproj" />
   </ItemGroup>
 
 </Project>

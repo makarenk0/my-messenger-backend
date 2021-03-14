@@ -5,33 +5,32 @@ using System.Text.Json;
 using System.Runtime.InteropServices;
 using System.Configuration;
 using MyMessengerBackend.DatabaseModule;
+using MyMessengerBackend.ApplicationModule;
 
 namespace MyMessengerBackend.MyMessengerProtocol
 {
     class PacketProcessor
     {
         private AesBase64Wrapper _encryptionModule;
-        private UserController _userController;
-        private MongoDbSettings _dbSettings;
+        private ApplicationProcessor _applicationProcessor;
+        
 
         public PacketProcessor()
         {
             _encryptionModule = new AesBase64Wrapper(Int32.Parse(ConfigurationManager.AppSettings["AES_ITERATIONS_NUM"]), 
                 Int32.Parse(ConfigurationManager.AppSettings["AES_KEY_LENGTH"]));
-            _dbSettings = new MongoDbSettings();
-            _dbSettings.ConnectionString = ConfigurationManager.AppSettings["db_connection"];
-            _dbSettings.DatabaseName = ConfigurationManager.AppSettings["db_name"];
+            
         }
 
         public Packet Process(Packet packet)
         {
-            switch (packet.PacketType)
+            if(packet.PacketType == '0')
             {
-                case '0':
-                    return InitDiffieHellman(packet);
-                default:
-                    return ProcessEncryptedPacket(packet);
+                Packet establishPacket = InitDiffieHellman(packet);
+                _applicationProcessor = new ApplicationProcessor();
+                return establishPacket;
             }
+            return ProcessEncryptedPacket(packet);
         }
 
         private Packet InitDiffieHellman(Packet packet)
@@ -129,9 +128,6 @@ namespace MyMessengerBackend.MyMessengerProtocol
             String publicKeyString = JsonSerializer.Serialize(publicKey);
 
 
-            _userController = new UserController(new MongoRepository<User>(_dbSettings));
-            Console.WriteLine(_userController.GetTest());
-
             return new Packet('0', Convert.ToBase64String(Encoding.ASCII.GetBytes(publicKeyString)));
         }
 
@@ -139,14 +135,10 @@ namespace MyMessengerBackend.MyMessengerProtocol
         private Packet ProcessEncryptedPacket(Packet packet)
         {
             string decryptedPayload = _encryptionModule.DecodeAndDecrypt(packet.Payload);
-            Console.WriteLine(decryptedPayload);
+            var response = _applicationProcessor.Process(packet.PacketType, decryptedPayload);
 
-
-
-
-            string response = "Hello from encrypted server!!";
-            String encrypted = _encryptionModule.EncryptAndEncode(response);
-            return new Packet('1', encrypted);
+            String encrypted = _encryptionModule.EncryptAndEncode(response.Item2);
+            return new Packet(response.Item1, encrypted);
         }
 
     }

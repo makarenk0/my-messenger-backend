@@ -1,7 +1,10 @@
-﻿using MyMessengerBackend.DeserializedPayloads;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using MyMessengerBackend.DeserializedPayloads;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -10,10 +13,23 @@ namespace MyMessengerBackend.DatabaseModule
     public class UserController
     {
         private readonly IMongoRepository<User> _usersRepository;
+        private readonly IMongoRepository<Chat> _chatsRepository;
 
-        public UserController(IMongoRepository<User> usersRepository)
+
+        private User _currentUser;
+
+        public User User
+        {
+            get
+            {
+                return _currentUser;
+            }
+        }
+
+        public UserController(IMongoRepository<User> usersRepository, IMongoRepository<Chat> chatsRepository)
         {
             _usersRepository = usersRepository;
+            _chatsRepository = chatsRepository;
         }
 
         public StatusResponse Register(RegistrationPayload payload)
@@ -54,7 +70,53 @@ namespace MyMessengerBackend.DatabaseModule
             {
                 return new LoginResponsePayload("error", "Password is invalid!");
             }
+            _currentUser = user;
             return new LoginResponsePayload("success", "logged in successfully", Guid.NewGuid().ToString());
+        }
+
+        public void AddTestChat(Chat chat)
+        {
+            _chatsRepository.InsertOneAsync(chat);
+        }
+
+        public List<string> SendMessageToChat(string chatId, Message mes)
+        {
+            List<string> usersOfChat = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Members).SingleOrDefault().ToList()
+                .Where(x => x != _currentUser.Id.ToString()).ToList();
+            _chatsRepository.UpdateOneArray(chatId, "Messages", mes);
+            return usersOfChat;
+        }
+
+        public void UpdateTestChat(Message mes)
+        {
+            //_chatsRepository.UpdateOneArrayAsync("6052553af34ec222c2c36a57", "Messages", mes);
+            //Chat ch = _chatsRepository.FindOneAsync(x => x.Id == new MongoDB.Bson.ObjectId("6052553af34ec222c2c36a57")).Result;
+            //  _chatsRepository.GetElementsFromArrayAfter("6052553af34ec222c2c36a57", "60526d82fd5b47331d0f0401");
+            //var filter = Builders<Chat>.Filter.And(Builders<Chat>.Filter.Eq("_id", new ObjectId("6052553af34ec222c2c36a57"))); //Builders<TDocument>.Filter.Eq("Messages._id", afterArrayId)
+            //var projection = Builders<Chat>.Projection.Expression(x => x.Messages.Where(y => y.Id.Timestamp > new ObjectId("60526d82fd5b47331d0f0401").Timestamp));
+            //_chatsRepository.AsQueryable().Where(x => x.Id == new ObjectId("6052553af34ec222c2c36a57")).Where(y => y.Messages.W)
+            //ch.
+
+            List<Message> messages = GetMessagesAfter("6052553af34ec222c2c36a57", "60526d82fd5b47331d0f0401");
+
+
+            //var items3 = _chatsRepository.AsQueryable().SingleOrDefault(x => x.Id == new ObjectId("6052553af34ec222c2c36a57")).Messages.Where(x => x.Id.Timestamp > new ObjectId("60526d82fd5b47331d0f0401").Timestamp);  // BAD - gets all document from db
+        }
+
+
+        public List<Message> GetMessagesAfter(string chatId, string lastMessageId)
+        {
+            var pipeline = _chatsRepository.Collection.Aggregate().Match(x => x.Id == new ObjectId(chatId)).Project(i => new {x = i.Messages.Where(x => x.Id > new ObjectId(lastMessageId))});
+
+            var res = pipeline.SingleOrDefault();
+            return res.x.ToList();
+        }
+
+
+        public List<string> GetAllConnectedChats()
+        {
+            var res = _chatsRepository.FilterBy(x => x.Members.Contains(_currentUser.Id.ToString()), x => x.Id);
+            return res.Select(x => x.ToString()).ToList();
         }
 
         private bool VerifyUserPassword(User user, string inputPassword)

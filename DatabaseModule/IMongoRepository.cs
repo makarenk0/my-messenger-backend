@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -9,6 +10,8 @@ namespace MyMessengerBackend.DatabaseModule
     public interface IMongoRepository<TDocument> where TDocument : IDocument
     {
         IQueryable<TDocument> AsQueryable();
+
+        IMongoCollection<TDocument> Collection { get; }
 
         IEnumerable<TDocument> FilterBy(
             Expression<Func<TDocument, bool>> filterExpression);
@@ -48,5 +51,11 @@ namespace MyMessengerBackend.DatabaseModule
         void DeleteMany(Expression<Func<TDocument, bool>> filterExpression);
 
         Task DeleteManyAsync(Expression<Func<TDocument, bool>> filterExpression);
+
+        // My methods
+        void UpdateOneArray(String id, String field, IDocument m);
+
+        Task UpdateOneArrayAsync(String id, String field, IDocument m);
+
     }
 }

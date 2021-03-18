@@ -13,24 +13,30 @@ namespace MyMessengerBackend.MyMessengerProtocol
     {
         private AesBase64Wrapper _encryptionModule;
         private ApplicationProcessor _applicationProcessor;
-        
 
-        public PacketProcessor()
+        private ApplicationProcessor.UserLoggedIn _action;
+        public PacketProcessor(ApplicationProcessor.UserLoggedIn action)
         {
-            _encryptionModule = new AesBase64Wrapper(Int32.Parse(ConfigurationManager.AppSettings["AES_ITERATIONS_NUM"]), 
+            _encryptionModule = new AesBase64Wrapper(Int32.Parse(ConfigurationManager.AppSettings["KEY_DERIVATION_ITERATIONS_NUMBER"]), 
                 Int32.Parse(ConfigurationManager.AppSettings["AES_KEY_LENGTH"]));
-            
+            _action = action;
         }
 
         public Packet Process(Packet packet)
         {
-            if(packet.PacketType == '0')
+            if (packet.PacketType == '0')
             {
                 Packet establishPacket = InitDiffieHellman(packet);
-                _applicationProcessor = new ApplicationProcessor();
+                _applicationProcessor = new ApplicationProcessor(_action);
                 return establishPacket;
             }
             return ProcessEncryptedPacket(packet);
+        }
+
+        public Packet UpdateChat(string chatId)
+        {
+            var resUpd = _applicationProcessor.UpdatePacketForChat(chatId);
+            return EncryptPacket(new Packet(resUpd.Item1, resUpd.Item2));
         }
 
         private Packet InitDiffieHellman(Packet packet)
@@ -136,9 +142,13 @@ namespace MyMessengerBackend.MyMessengerProtocol
         {
             string decryptedPayload = _encryptionModule.DecodeAndDecrypt(packet.Payload);
             var response = _applicationProcessor.Process(packet.PacketType, decryptedPayload);
+            return EncryptPacket(new Packet(response.Item1, response.Item2));
+        }
 
-            String encrypted = _encryptionModule.EncryptAndEncode(response.Item2);
-            return new Packet(response.Item1, encrypted);
+        public Packet EncryptPacket(Packet packet)
+        {
+            packet.Payload = _encryptionModule.EncryptAndEncode(packet.Payload);
+            return packet;
         }
 
     }

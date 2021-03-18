@@ -47,7 +47,7 @@ namespace MyMessengerBackend.MyMessengerProtocol
             {
                 var d = GetCryptoTransform(csp, false);
                 byte[] output = Convert.FromBase64String(encrypted);
-                byte[] decryptedOutput = d.TransformFinalBlock(output, 0, output.Length);
+                byte[] decryptedOutput = d.TransformFinalBlock(output, 0, output.Length);   //TO DO: handle exception Padding can not be removed ()
                 string decypted = Encoding.UTF8.GetString(decryptedOutput);
                 return decypted;
             }

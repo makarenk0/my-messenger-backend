@@ -1,7 +1,9 @@
-﻿using System;
+﻿using MyMessengerBackend.ApplicationModule;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace MyMessengerBackend.MyMessengerProtocol
 {
@@ -9,10 +11,12 @@ namespace MyMessengerBackend.MyMessengerProtocol
     {
         PacketProcessor _pktProcessor;
         private List<byte> _applicationPacket;
+
         private byte[] _response;
-        public Recognizer()
+
+        public Recognizer(ApplicationProcessor.UserLoggedIn action)
         {
-            _pktProcessor = new PacketProcessor();
+            _pktProcessor = new PacketProcessor(action);
             _applicationPacket = new List<byte>();
             _applicationPacket.Capacity = 64;
         }
@@ -32,6 +36,11 @@ namespace MyMessengerBackend.MyMessengerProtocol
                 }
             }
             return responseReady;
+        }
+
+        public byte[] UpdateChat(string chatId)
+        {
+            return _pktProcessor.UpdateChat(chatId).GetBytesForm();
         }
 
 

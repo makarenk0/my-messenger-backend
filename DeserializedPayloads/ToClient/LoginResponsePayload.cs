@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace MyMessengerBackend.DeserializedPayloads
+namespace DeserializedPayloads.ToClient
 {
-    public class LoginResponsePayload : StatusResponse
+    public class LoginResponsePayload : StatusResponsePayload
     {
 
         public LoginResponsePayload(string status, string details, string sessionToken) : base(status, details)

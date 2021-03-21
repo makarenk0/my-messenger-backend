@@ -1,7 +1,7 @@
 ﻿
 using System.Text.Json.Serialization;
 
-namespace MyMessengerBackend.DeserializedPayloads
+namespace DeserializedPayloads.FromClient
 {
     public class LoginPayload
     {

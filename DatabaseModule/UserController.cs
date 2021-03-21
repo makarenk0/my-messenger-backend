@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using MyMessengerBackend.DeserializedPayloads;
+using DeserializedPayloads.ToClient;
+using DeserializedPayloads.FromClient;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -32,12 +33,12 @@ namespace MyMessengerBackend.DatabaseModule
             _chatsRepository = chatsRepository;
         }
 
-        public StatusResponse Register(RegistrationPayload payload)
+        public StatusResponsePayload Register(RegistrationPayload payload)
         {
             User checkLogin = _usersRepository.FindOneAsync(x => x.Login == payload.Login).Result;
             if(checkLogin != null)
             {
-                return new StatusResponse("error", "Login is already taken");
+                return new StatusResponsePayload("error", "Login is already taken");
             }
             byte[] passwordSalt = CreateSalt(32); //best practice - salt length same as the length of hash function
             byte[] hashSaltedPassword = GenerateSaltedHash(Encoding.ASCII.GetBytes(payload.Password), passwordSalt);
@@ -55,7 +56,7 @@ namespace MyMessengerBackend.DatabaseModule
             };
             _usersRepository.InsertOneAsync(newUser);
     
-            return new StatusResponse("success", "Account successfully created!");
+            return new StatusResponsePayload("success", "Account successfully created!");
         }
 
 
@@ -110,6 +111,12 @@ namespace MyMessengerBackend.DatabaseModule
 
             var res = pipeline.SingleOrDefault();
             return res.x.ToList();
+        }
+
+        public List<Message> GetWholeChatMessages(string chatId)
+        {
+            List<Message> allMessages = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Messages).SingleOrDefault().ToList();
+            return allMessages;
         }
 
 

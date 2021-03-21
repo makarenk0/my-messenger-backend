@@ -8,6 +8,8 @@ namespace MyMessengerBackend.DatabaseModule
     [BsonCollection("chats")]
     public class Chat : Document
     {
+        public string ChatName { get; set; }
+
         public ICollection<String> Members { get; set; }
 
         public ICollection<Message> Messages { get; set; }

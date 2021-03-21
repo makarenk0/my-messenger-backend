@@ -59,7 +59,7 @@ namespace MyMessengerBackend.MyMessengerProtocol
             csp.Padding = PaddingMode.PKCS7;
 
             //_derivedKey
-            var spec = new Rfc2898DeriveBytes(_derivedKey, Encoding.UTF8.GetBytes(SALT), _aesIterationsNum);
+            var spec = new Rfc2898DeriveBytes(_derivedKey, Encoding.UTF8.GetBytes(SALT), _aesIterationsNum); //TO DO: handle derived key is null
 
             byte[] key = spec.GetBytes(_aesKeyLengthBytes);
 

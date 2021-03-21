@@ -1,8 +1,7 @@
-﻿using DeserializedPayloads;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace MyMessengerBackend.DeserializedPayloads
+namespace DeserializedPayloads.FromClient
 {
     public class SubscriptionToUpdatePayload : SessionTokenPayload
     {

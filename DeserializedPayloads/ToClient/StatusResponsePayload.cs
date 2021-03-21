@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace MyMessengerBackend.DeserializedPayloads
+namespace DeserializedPayloads.ToClient
 {
-    public class StatusResponse
+    public class StatusResponsePayload
     {
-        public StatusResponse(string status)
+        public StatusResponsePayload(string status)
         {
             Status = status;
             Details = "";
         }
 
-        public StatusResponse(string status, string details)
+        public StatusResponsePayload(string status, string details)
         {
             Status = status;
             Details = details;

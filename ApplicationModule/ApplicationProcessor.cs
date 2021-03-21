@@ -1,7 +1,8 @@
 ﻿
+using DeserializedPayloads.ToClient;
+using DeserializedPayloads.FromClient;
 using MongoDB.Bson;
 using MyMessengerBackend.DatabaseModule;
-using MyMessengerBackend.DeserializedPayloads;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -59,16 +60,25 @@ namespace MyMessengerBackend.ApplicationModule
                     {
                         _sessionToken = result.SessionToken;
                         _userLoggedAction(_userController.User.Id.ToString());
-                        //_activeUsersTable[_userController.User.Id.ToString()]("superchatid");  //Test
                     }
                     return ('2', JsonSerializer.Serialize(result));
                 case '3':
                     Message mes = new Message() { Sender = "member2", Body = "Forth message add to db", Id = MongoDB.Bson.ObjectId.GenerateNewId() };
                     //_userController.AddTestChat(new Chat() { Members = new List<string>() { "member1", "member2" }, Messages = new List<Message>() { mes } });
                     _userController.UpdateTestChat(mes);
-                    return ('3', JsonSerializer.Serialize(new StatusResponse("success", "Chat added")));
+                    return ('3', JsonSerializer.Serialize(new StatusResponsePayload("success", "Chat added")));
                 case '4':  //Dont forget token
-                    ChatMessageSend send = JsonSerializer.Deserialize<ChatMessageSend>(payload);
+
+                    
+
+                    SendChatMessagePayload send = JsonSerializer.Deserialize<SendChatMessagePayload>(payload);
+
+                    var verifyResult4 = VerifySessionToken(send.SessionToken);
+                    if (!verifyResult4.Item1)
+                    {
+                        return ('4', JsonSerializer.Serialize(verifyResult4.Item2));
+                    }
+
                     Message newMessage = new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = send.Body };
                     
                     var sended = _userController.SendMessageToChat(send.ChatId, newMessage);
@@ -78,19 +88,21 @@ namespace MyMessengerBackend.ApplicationModule
                 case '7':
                     SubscriptionToUpdatePayload updatePayload = JsonSerializer.Deserialize<SubscriptionToUpdatePayload>(payload);
 
-                    var verifyResult = VerifySessionToken(updatePayload.SessionToken);
-                    if (!verifyResult.Item1)
+                    var verifyResult7 = VerifySessionToken(updatePayload.SessionToken);
+                    if (!verifyResult7.Item1)
                     {
-                        return ('7', JsonSerializer.Serialize(verifyResult.Item2));
+                        return ('7', JsonSerializer.Serialize(verifyResult7.Item2));
                     }
 
                     _userSubscribedForUpdates = true;
                     _subscriptionUpdatePacketNumber = updatePayload.SubscriptionPacketNumber;
                     FormLastMessagesTable(updatePayload.LastChatsMessages);
-
-                    return ('7', JsonSerializer.Serialize(new StatusResponse("success", $"Subscribed for update on packet number {updatePayload.SubscriptionPacketNumber}")));
+                    return ('7', JsonSerializer.Serialize(GetZeroUpdate()));
+                //Debug
+                case 'd':
+                    return ('3', JsonSerializer.Serialize(new StatusResponsePayload("success", "Debug message")));
                 default:
-                    return ('9', JsonSerializer.Serialize(new StatusResponse("error", "Unrecognized packet type")));
+                    return ('9', JsonSerializer.Serialize(new StatusResponsePayload("error", "Unrecognized packet type")));
             }
         }
 
@@ -106,29 +118,43 @@ namespace MyMessengerBackend.ApplicationModule
             
         }
 
+        private ZeroUpdatePayload GetZeroUpdate()
+        {
+            ZeroUpdatePayload res = new ZeroUpdatePayload("success", "Subscribed for update") { AllChats = new List<UpdateChatPayload>()};
+            foreach (var m in _lastChatsMessages.Keys)
+            {
+                res.AllChats.Add(GetOneChatUpdated(m));
+            }
+            return res;
+        }
+
         public (char, string) UpdatePacketForChat(string chatId)
         {
 
-            // init new chat
+            // if someone init new chat with you
             if (!_lastChatsMessages.ContainsKey(chatId))
             {
                 _lastChatsMessages.Add(chatId, null);
             }
 
-            
+            return (_subscriptionUpdatePacketNumber, JsonSerializer.Serialize(GetOneChatUpdated(chatId)));
+        }
+
+
+        private UpdateChatPayload GetOneChatUpdated(string chatId)
+        {
             List<Message> newMessages;
             if (String.IsNullOrEmpty(_lastChatsMessages[chatId])) //get whole chat messages
             {
-                throw new NotImplementedException("whole chat load not implemented");
-                //newMessages = 
+                newMessages = _userController.GetWholeChatMessages(chatId);
+                _lastChatsMessages[chatId] = newMessages.Count > 0 ? newMessages[newMessages.Count - 1].Id.ToString() : null;  //update last messages table, if chat is empty leave null
             }
             else //get only new chat messages
             {
                 newMessages = _userController.GetMessagesAfter(chatId, _lastChatsMessages[chatId]);
-                _lastChatsMessages[chatId] = newMessages[newMessages.Count-1].Id.ToString();  //udpate last messages table
+                _lastChatsMessages[chatId] = newMessages.Count > 0 ? newMessages[newMessages.Count - 1].Id.ToString() : _lastChatsMessages[chatId];  //update last messages table, if no new messages - leave as it was
             }
-            UpdateChatPayload updatePayload = new UpdateChatPayload() { ChatId = chatId, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };
-            return (_subscriptionUpdatePacketNumber, JsonSerializer.Serialize(updatePayload));
+            return new UpdateChatPayload() { ChatId = chatId, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };
         }
 
 
@@ -150,11 +176,11 @@ namespace MyMessengerBackend.ApplicationModule
         }
 
 
-        private (bool, StatusResponse) VerifySessionToken(string passedSessionToken)
+        private (bool, StatusResponsePayload) VerifySessionToken(string passedSessionToken)
         {
             if(passedSessionToken != _sessionToken)
             {
-                return (false, new StatusResponse("error", "Invalid session token"));
+                return (false, new StatusResponsePayload("error", "Invalid session token"));
             }
             return (true, null);
         }

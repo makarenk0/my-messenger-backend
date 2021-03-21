@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace MyMessengerBackend.DeserializedPayloads
+namespace DeserializedPayloads.FromClient
 {
-    public class LastChatMessage
+    public class SendChatMessagePayload : SessionTokenPayload
     {
         [JsonPropertyName("ChatId")]
         public string ChatId { get; set; }
 
-        [JsonPropertyName("LastMessageId")]
-        public string LastMessageId { get; set; }
+        [JsonPropertyName("Body")]
+        public string Body { get; set; }
     }
 }

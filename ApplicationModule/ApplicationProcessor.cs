@@ -67,7 +67,7 @@ namespace MyMessengerBackend.ApplicationModule
                     //_userController.AddTestChat(new Chat() { Members = new List<string>() { "member1", "member2" }, Messages = new List<Message>() { mes } });
                     _userController.UpdateTestChat(mes);
                     return ('3', JsonSerializer.Serialize(new StatusResponsePayload("success", "Chat added")));
-                case '4':  //Dont forget token
+                case '4': 
 
                     
 
@@ -123,7 +123,12 @@ namespace MyMessengerBackend.ApplicationModule
             ZeroUpdatePayload res = new ZeroUpdatePayload("success", "Subscribed for update") { AllChats = new List<UpdateChatPayload>()};
             foreach (var m in _lastChatsMessages.Keys)
             {
-                res.AllChats.Add(GetOneChatUpdated(m));
+                var update = GetOneChatUpdated(m);
+                if(update.NewMessages.Count > 0)
+                {
+                    res.AllChats.Add(update);
+                }
+                
             }
             return res;
         }
@@ -146,15 +151,18 @@ namespace MyMessengerBackend.ApplicationModule
             List<Message> newMessages;
             if (String.IsNullOrEmpty(_lastChatsMessages[chatId])) //get whole chat messages
             {
-                newMessages = _userController.GetWholeChatMessages(chatId);
+                var wholeChat = _userController.GetWholeChat(chatId);
+                newMessages = wholeChat.Messages;
                 _lastChatsMessages[chatId] = newMessages.Count > 0 ? newMessages[newMessages.Count - 1].Id.ToString() : null;  //update last messages table, if chat is empty leave null
+                return new UpdateChatPayload() { ChatId = chatId, ChatName = wholeChat.ChatName, Members = wholeChat.Members, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };
             }
             else //get only new chat messages
             {
                 newMessages = _userController.GetMessagesAfter(chatId, _lastChatsMessages[chatId]);
                 _lastChatsMessages[chatId] = newMessages.Count > 0 ? newMessages[newMessages.Count - 1].Id.ToString() : _lastChatsMessages[chatId];  //update last messages table, if no new messages - leave as it was
+                return new UpdateChatPayload() { ChatId = chatId, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };  //TO DO: add null fields back, add field which says if chat is new
             }
-            return new UpdateChatPayload() { ChatId = chatId, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };
+            
         }
 
 

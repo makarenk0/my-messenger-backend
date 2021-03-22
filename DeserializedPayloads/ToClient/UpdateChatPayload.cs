@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace DeserializedPayloads.ToClient
 {
-    public class UpdateChatPayload
+    public class UpdateChatPayload : NewChatPayload
     {
         [JsonPropertyName("ChatId")]
         public string ChatId { get; set; }

@@ -98,7 +98,7 @@ namespace MyMessengerBackend.DatabaseModule
             //_chatsRepository.AsQueryable().Where(x => x.Id == new ObjectId("6052553af34ec222c2c36a57")).Where(y => y.Messages.W)
             //ch.
 
-            List<Message> messages = GetMessagesAfter("6052553af34ec222c2c36a57", "60526d82fd5b47331d0f0401");
+            //List<Message> messages = GetMessagesAfter("6052553af34ec222c2c36a57", "60526d82fd5b47331d0f0401");
 
 
             //var items3 = _chatsRepository.AsQueryable().SingleOrDefault(x => x.Id == new ObjectId("6052553af34ec222c2c36a57")).Messages.Where(x => x.Id.Timestamp > new ObjectId("60526d82fd5b47331d0f0401").Timestamp);  // BAD - gets all document from db
@@ -113,10 +113,12 @@ namespace MyMessengerBackend.DatabaseModule
             return res.x.ToList();
         }
 
-        public List<Message> GetWholeChatMessages(string chatId)
+        public Chat GetWholeChat(string chatId)
         {
-            List<Message> allMessages = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Messages).SingleOrDefault().ToList();
-            return allMessages;
+            //List<Message> allMessages = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Messages).SingleOrDefault().ToList();
+
+            Chat chat = _chatsRepository.FindById(chatId);
+            return chat;
         }
 
 

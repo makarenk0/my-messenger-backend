@@ -10,8 +10,8 @@ namespace MyMessengerBackend.DatabaseModule
     {
         public string ChatName { get; set; }
 
-        public ICollection<String> Members { get; set; }
+        public List<String> Members { get; set; }
 
-        public ICollection<Message> Messages { get; set; }
+        public List<Message> Messages { get; set; }
     }
 }

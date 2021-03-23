@@ -154,13 +154,14 @@ namespace MyMessengerBackend.ApplicationModule
                 var wholeChat = _userController.GetWholeChat(chatId);
                 newMessages = wholeChat.Messages;
                 _lastChatsMessages[chatId] = newMessages.Count > 0 ? newMessages[newMessages.Count - 1].Id.ToString() : null;  //update last messages table, if chat is empty leave null
-                return new UpdateChatPayload() { ChatId = chatId, ChatName = wholeChat.ChatName, Members = wholeChat.Members, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };
+                return new UpdateChatPayload() { ChatId = chatId, IsNew=true, ChatName = wholeChat.ChatName, Members = wholeChat.Members, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };
             }
             else //get only new chat messages
             {
-                newMessages = _userController.GetMessagesAfter(chatId, _lastChatsMessages[chatId]);
+                var newMessagesChat = _userController.GetMessagesAfter(chatId, _lastChatsMessages[chatId]);
+                newMessages = newMessagesChat;
                 _lastChatsMessages[chatId] = newMessages.Count > 0 ? newMessages[newMessages.Count - 1].Id.ToString() : _lastChatsMessages[chatId];  //update last messages table, if no new messages - leave as it was
-                return new UpdateChatPayload() { ChatId = chatId, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };  //TO DO: add null fields back, add field which says if chat is new
+                return new UpdateChatPayload() { ChatId = chatId, IsNew = false, ChatName = null, Members = null, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };  //TO DO: debug
             }
             
         }

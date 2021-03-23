@@ -72,7 +72,7 @@ namespace MyMessengerBackend.DatabaseModule
                 return new LoginResponsePayload("error", "Password is invalid!");
             }
             _currentUser = user;
-            return new LoginResponsePayload("success", "logged in successfully", Guid.NewGuid().ToString());
+            return new LoginResponsePayload("success", "logged in successfully", Guid.NewGuid().ToString(), _currentUser.Id.ToString());
         }
 
         public void AddTestChat(Chat chat)
@@ -108,7 +108,9 @@ namespace MyMessengerBackend.DatabaseModule
         public List<Message> GetMessagesAfter(string chatId, string lastMessageId)
         {
             var pipeline = _chatsRepository.Collection.Aggregate().Match(x => x.Id == new ObjectId(chatId)).Project(i => new {x = i.Messages.Where(x => x.Id > new ObjectId(lastMessageId))});
-
+            //var pipeline = _chatsRepository.Collection.Aggregate().Match(x => x.Id == new ObjectId(chatId)).Project(i => new Chat{ChatName=i.ChatName, Members=i.Members, Messages = i.Messages.Where(x => x.Id > new ObjectId(lastMessageId)).ToList()}); //TO DO: debug
+            
+        
             var res = pipeline.SingleOrDefault();
             return res.x.ToList();
         }

@@ -5,12 +5,21 @@ using System.Text.Json.Serialization;
 
 namespace DeserializedPayloads.ToClient
 {
-    public class UpdateChatPayload : NewChatPayload
+    public class UpdateChatPayload
     {
         [JsonPropertyName("ChatId")]
         public string ChatId { get; set; }
 
+        [JsonPropertyName("IsNew")]
+        public bool IsNew { get; set; }
+
         [JsonPropertyName("NewMessages")]
         public List<ChatMessage> NewMessages { get; set; }
+
+        [JsonPropertyName("ChatName")]
+        public string ChatName { get; set; }
+
+        [JsonPropertyName("Members")]
+        public List<String> Members { get; set; }
     }
 }

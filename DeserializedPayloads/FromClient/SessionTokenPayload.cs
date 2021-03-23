@@ -9,6 +9,5 @@ namespace DeserializedPayloads.FromClient
     {
         [JsonPropertyName("SessionToken")]
         public string SessionToken { get; set; }
-
     }
 }

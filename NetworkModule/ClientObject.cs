@@ -46,7 +46,7 @@ namespace MyMessengerBackend.NetworkModule
                     int bytes = 0;
                     do
                     {
-                        bytes = _stream.Read(data, 0, data.Length);
+                        bytes = _stream.Read(data, 0, data.Length);   //TO DO: handle System.IO.IOException
                         if (clientRecognizer.Process(data, bytes))
                         {
                             _stream.Write(clientRecognizer.Response, 0, clientRecognizer.Response.Length);

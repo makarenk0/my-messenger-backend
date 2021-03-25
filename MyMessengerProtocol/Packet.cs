@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MyMessengerBackend.MyMessengerProtocol
 {
-    class Packet
+    public class Packet
     {
 
         //private long _packetId;

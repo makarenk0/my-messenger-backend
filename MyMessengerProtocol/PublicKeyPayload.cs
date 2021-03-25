@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace MyMessengerBackend.MyMessengerProtocol
 {
-    class PublicKeyPayload
+    public class PublicKeyPayload
     {
         
         private String public_key;

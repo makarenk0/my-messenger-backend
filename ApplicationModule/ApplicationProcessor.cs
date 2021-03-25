@@ -1,6 +1,6 @@
 ﻿
-using DeserializedPayloads.ToClient;
-using DeserializedPayloads.FromClient;
+using PayloadObjects.ToClient;
+using PayloadObjects.FromClient;
 using MongoDB.Bson;
 using MyMessengerBackend.DatabaseModule;
 using System;
@@ -19,7 +19,7 @@ namespace MyMessengerBackend.ApplicationModule
 
         private string _sessionToken;
 
-        private bool _userSubscribedForUpdates;
+        //private bool _userSubscribedForUpdates;
         private char _subscriptionUpdatePacketNumber;
 
 
@@ -35,7 +35,7 @@ namespace MyMessengerBackend.ApplicationModule
 
         public ApplicationProcessor(UserLoggedIn action)
         {
-            _userSubscribedForUpdates = false;
+            //_userSubscribedForUpdates = false;
             _dbSettings = new MongoDbSettings();
             _dbSettings.ConnectionString = ConfigurationManager.AppSettings["db_connection"];
             _dbSettings.DatabaseName = ConfigurationManager.AppSettings["db_name"];
@@ -94,7 +94,7 @@ namespace MyMessengerBackend.ApplicationModule
                         return ('7', JsonSerializer.Serialize(verifyResult7.Item2));
                     }
 
-                    _userSubscribedForUpdates = true;
+                    //_userSubscribedForUpdates = true;
                     _subscriptionUpdatePacketNumber = updatePayload.SubscriptionPacketNumber;
                     FormLastMessagesTable(updatePayload.LastChatsMessages);
                     return ('7', JsonSerializer.Serialize(GetZeroUpdate()));

@@ -9,7 +9,7 @@ using System.Collections.Specialized;
 
 namespace MyMessengerBackend.MyMessengerProtocol
 {
-    class AesBase64Wrapper
+    public class AesBase64Wrapper
     {
         // SHOULD GENERATE EACH MESSAGE AND TRANSFER WITH PACKET!!!
         private static string IV = "IV_VALUE_16_BYTE";

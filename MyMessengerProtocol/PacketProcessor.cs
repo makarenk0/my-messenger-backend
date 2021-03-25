@@ -9,15 +9,18 @@ using MyMessengerBackend.ApplicationModule;
 
 namespace MyMessengerBackend.MyMessengerProtocol
 {
-    class PacketProcessor
+    public class PacketProcessor
     {
         private AesBase64Wrapper _encryptionModule;
         private ApplicationProcessor _applicationProcessor;
 
         private ApplicationProcessor.UserLoggedIn _action;
+
+        public AesBase64Wrapper EncryptionModule { get => _encryptionModule; set => _encryptionModule = value; }
+
         public PacketProcessor(ApplicationProcessor.UserLoggedIn action)
         {
-            _encryptionModule = new AesBase64Wrapper(Int32.Parse(ConfigurationManager.AppSettings["KEY_DERIVATION_ITERATIONS_NUMBER"]), 
+            _encryptionModule = new AesBase64Wrapper(Int32.Parse(ConfigurationManager.AppSettings["KEY_DERIVATION_ITERATIONS_NUMBER"]),
                 Int32.Parse(ConfigurationManager.AppSettings["AES_KEY_LENGTH"]));
             _action = action;
         }

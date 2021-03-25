@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseModule", "DatabaseM
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationModule", "ApplicationModule\ApplicationModule.csproj", "{623049C0-5C3C-4C58-8F64-23BC2DF78EC2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PayloadObjects", "DeserializedPayloads\PayloadObjects.csproj", "{BB2BD59F-A624-4063-9DB6-477DD4F6E6AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PayloadObjects", "PayloadObjects\PayloadObjects.csproj", "{BB2BD59F-A624-4063-9DB6-477DD4F6E6AA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{C374C6C6-DD71-4AF2-B4FC-AA7CBDC566E6}"
 EndProject

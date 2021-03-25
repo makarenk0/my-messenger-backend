@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DeserializedPayloads\PayloadObjects.csproj" />
+    <ProjectReference Include="..\PayloadObjects\PayloadObjects.csproj" />
   </ItemGroup>
 
 </Project>

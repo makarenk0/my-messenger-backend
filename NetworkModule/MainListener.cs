@@ -24,8 +24,6 @@ namespace MyMessengerBackend.NetworkModule
 
             IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse(_ipAddress), _port);
             _listener = new TcpListener(IPAddress.Parse(_ipAddress), _port);//new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            //_listener.Bind(ipPoint);
-            //_listener.Listen(10);
             _listener.Start();
 
             int minWorker, minIOC;

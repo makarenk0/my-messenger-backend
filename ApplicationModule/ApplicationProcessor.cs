@@ -83,7 +83,7 @@ namespace MyMessengerBackend.ApplicationModule
                     
                     var sended = _userController.SendMessageToChat(send.ChatId, newMessage);
                     TriggerUsers(send.ChatId, sended);
-                    return ('4', JsonSerializer.Serialize(new ChatMessage(newMessage.Id.ToString(), newMessage.Sender, newMessage.Body)));
+                    return ('4', JsonSerializer.Serialize(new StatusResponsePayload("success", "Message was sent")));
                 //Subscribing to updates, notifying server about last received messages in chats
                 case '7':
                     SubscriptionToUpdatePayload updatePayload = JsonSerializer.Deserialize<SubscriptionToUpdatePayload>(payload);

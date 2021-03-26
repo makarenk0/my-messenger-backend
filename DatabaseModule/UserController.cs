@@ -82,8 +82,7 @@ namespace MyMessengerBackend.DatabaseModule
 
         public List<string> SendMessageToChat(string chatId, Message mes)
         {
-            List<string> usersOfChat = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Members).SingleOrDefault().ToList()
-                .Where(x => x != _currentUser.Id.ToString()).ToList();
+            List<string> usersOfChat = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Members).SingleOrDefault().ToList();
             _chatsRepository.UpdateOneArray(chatId, "Messages", mes);
             return usersOfChat;
         }

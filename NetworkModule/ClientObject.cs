@@ -6,6 +6,7 @@ using System.Linq;
 using MyMessengerBackend.MyMessengerProtocol;
 using System.Threading.Tasks;
 using MyMessengerBackend.ApplicationModule;
+using System.Text.RegularExpressions;
 
 namespace MyMessengerBackend.NetworkModule
 {
@@ -24,7 +25,6 @@ namespace MyMessengerBackend.NetworkModule
         public ClientObject(TcpClient tcpClient)//Socket tcpClient)
         {
             client = tcpClient;
-            
         }
 
         public void Process(Object stateInfo)
@@ -47,27 +47,15 @@ namespace MyMessengerBackend.NetworkModule
                     do
                     {
                         bytes = _stream.Read(data, 0, data.Length);   //TO DO: handle System.IO.IOException
-                        if (clientRecognizer.Process(data, bytes))
+                        
+                        if (clientRecognizer.Process(data, bytes)) //collection data while response is not ready
                         {
-                            _stream.Write(clientRecognizer.Response, 0, clientRecognizer.Response.Length);
+                            _stream.Write(clientRecognizer.Response, 0, clientRecognizer.Response.Length);  //when response ready send it
                         }
 
 
                     }
-                    while (_stream.DataAvailable);
-                    // ---------------------
-
-                    // Update from server
-
-                    //clientRecognizer.Update();
-                    //while(clientRecognizer.UpdateQueue.Count > 0)
-                    //{
-                    //    byte[] updateBytes = clientRecognizer.UpdateQueue.Dequeue();
-                    //    stream.Write(updateBytes, 0, updateBytes.Length);
-                    //}
-
-                    // ---------------------
-                    
+                    while (_stream.DataAvailable);    
                 }
             }
             catch (SocketException ex)

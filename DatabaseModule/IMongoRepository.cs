@@ -16,6 +16,8 @@ namespace MyMessengerBackend.DatabaseModule
         IEnumerable<TDocument> FilterBy(
             Expression<Func<TDocument, bool>> filterExpression);
 
+        IEnumerable<TDocument> FilterByLimited(Expression<Func<TDocument, bool>> filterExpression, int limit);
+
         IEnumerable<TProjected> FilterBy<TProjected>(
             Expression<Func<TDocument, bool>> filterExpression,
             Expression<Func<TDocument, TProjected>> projectionExpression);

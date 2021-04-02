@@ -7,17 +7,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MyMessengerBackend.NetworkModule
+namespace WebsocketAdapter
 {
-    class MainListener
+    public class MainWebsocketListener
     {
         private readonly int _port;
         private readonly string _ipAddress;
-        //private readonly Socket _listener;
         private readonly TcpListener _listener;
         private const int DEFAULT_PARALLEL_THREADS_NUM = 15;
 
-        public MainListener(int port, string ipAddress)
+        public MainWebsocketListener(int port, string ipAddress)
         {
             _port = port;
             _ipAddress = ipAddress;
@@ -26,10 +25,10 @@ namespace MyMessengerBackend.NetworkModule
             _listener = new TcpListener(IPAddress.Parse(_ipAddress), _port);//new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _listener.Start();
 
-            int minWorker, minIOC;
-            ThreadPool.GetMinThreads(out minWorker, out minIOC);
-            ThreadPool.SetMinThreads(DEFAULT_PARALLEL_THREADS_NUM, minIOC);
-            Console.WriteLine(String.Concat("Resetting default thread pool volume from ", minWorker, " to ", DEFAULT_PARALLEL_THREADS_NUM));
+            //int minWorker, minIOC;
+            //ThreadPool.GetMinThreads(out minWorker, out minIOC);
+            //ThreadPool.SetMinThreads(DEFAULT_PARALLEL_THREADS_NUM, minIOC);
+            //Console.WriteLine(String.Concat("Resetting default thread pool volume from ", minWorker, " to ", DEFAULT_PARALLEL_THREADS_NUM));
 
             Listen();
         }
@@ -41,16 +40,14 @@ namespace MyMessengerBackend.NetworkModule
                 int clientsAmount = 0;
                 while (true)
                 {
-                    Console.WriteLine("Waiting for mobile clients...");
+                    Console.WriteLine("Waiting for web clients...");
                     //Socket client = _listener.Accept();
                     TcpClient client = _listener.AcceptTcpClient();
-                    ClientObject clientObject = new ClientObject(client);
+                    WebsocketClientObject clientObject = new WebsocketClientObject(client);
 
                     ThreadPool.QueueUserWorkItem(clientObject.Process);
-                  
-                    ++clientsAmount;
 
-                    Console.WriteLine(String.Concat("Current clients number: ", clientsAmount));
+                    ++clientsAmount;
                 }
             }
             catch (Exception ex)

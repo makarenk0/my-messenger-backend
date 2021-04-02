@@ -14,6 +14,8 @@ namespace MyMessengerBackend.ApplicationModule
 {
     public class ApplicationProcessor
     {
+
+        private const int MAXIMUM_USERS_SEARCH_NUMBER = 10;
         private UserController _userController;
         private MongoDbSettings _dbSettings;
 
@@ -62,15 +64,20 @@ namespace MyMessengerBackend.ApplicationModule
                         _userLoggedAction(_userController.User.Id.ToString());
                     }
                     return ('2', JsonSerializer.Serialize(result));
+                //Find user
                 case '3':
-                    Message mes = new Message() { Sender = "member2", Body = "Forth message add to db", Id = MongoDB.Bson.ObjectId.GenerateNewId() };
-                    //_userController.AddTestChat(new Chat() { Members = new List<string>() { "member1", "member2" }, Messages = new List<Message>() { mes } });
-                    _userController.UpdateTestChat(mes);
-                    return ('3', JsonSerializer.Serialize(new StatusResponsePayload("success", "Chat added")));
+                    FindUserPayload find = JsonSerializer.Deserialize<FindUserPayload>(payload);
+
+                    var verifyResult3 = VerifySessionToken(find.SessionToken);
+                    if (!verifyResult3.Item1)
+                    {
+                        return ('4', JsonSerializer.Serialize(verifyResult3.Item2));
+                    }
+
+                    UsersInfoPayload usersInfo = new UsersInfoPayload("success", "found users", _userController.GetUsers(find.FindUsersRequest, MAXIMUM_USERS_SEARCH_NUMBER));
+                    return ('3', JsonSerializer.Serialize(usersInfo));
+                //Send message
                 case '4': 
-
-                    
-
                     SendChatMessagePayload send = JsonSerializer.Deserialize<SendChatMessagePayload>(payload);
 
                     var verifyResult4 = VerifySessionToken(send.SessionToken);
@@ -84,6 +91,11 @@ namespace MyMessengerBackend.ApplicationModule
                     var sended = _userController.SendMessageToChat(send.ChatId, newMessage);
                     TriggerUsers(send.ChatId, sended);
                     return ('4', JsonSerializer.Serialize(new StatusResponsePayload("success", "Message was sent")));
+                case '5':
+                    Message mes = new Message() { Sender = "member2", Body = "Forth message add to db", Id = MongoDB.Bson.ObjectId.GenerateNewId() };
+                    //_userController.AddTestChat(new Chat() { Members = new List<string>() { "member1", "member2" }, Messages = new List<Message>() { mes } });
+                    _userController.UpdateTestChat(mes);
+                    return ('3', JsonSerializer.Serialize(new StatusResponsePayload("success", "Chat added")));
                 //Subscribing to updates, notifying server about last received messages in chats
                 case '7':
                     SubscriptionToUpdatePayload updatePayload = JsonSerializer.Deserialize<SubscriptionToUpdatePayload>(payload);

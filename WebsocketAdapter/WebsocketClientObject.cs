@@ -11,18 +11,36 @@ namespace WebsocketAdapter
 {
     public class WebsocketClientObject
     {
-        //public Socket client;
         public TcpClient client;
+
+        private static byte _magicSequence = 0x7E;
 
 
         private string _userId;
-        //public List<>
+
 
         private NetworkStream _stream;
-        
+        private ApplicationProcessor _applicationProcessor;
+        private List<byte> _accumulator;
+
         public WebsocketClientObject(TcpClient tcpClient)//Socket tcpClient)
         {
             client = tcpClient;
+            _applicationProcessor = new ApplicationProcessor(UserLoggedIn);
+            _accumulator = new List<byte>();
+        }
+
+        private void EstablishWebsocketConnection()
+        {
+            byte[] data = new byte[64];
+            do
+            {
+                int bytes = _stream.Read(data, 0, data.Length);
+                _accumulator.AddRange(data.Take(bytes).ToArray());
+            }
+            while (_stream.DataAvailable);
+            HandleData(_accumulator);
+            _accumulator.Clear();
         }
 
         public void Process(Object stateInfo)
@@ -35,30 +53,26 @@ namespace WebsocketAdapter
 
                 //Need this to know when to pass delegate for updating
                 ApplicationProcessor.UserLoggedIn userLoggedInAction = UserLoggedIn;
-                List<byte> result = new List<byte>();
 
+                EstablishWebsocketConnection();
+
+                List<byte> buf = new List<byte>();
                 while (!(client.Client.Poll(1000, SelectMode.SelectRead) && client.Available == 0))
                 {
-                    //while (!_stream.DataAvailable) ;
-                    //while (client.Available < 3) ; // match against "get"
-
 
                     int bytes = 0;
                     do
                     {
                         bytes = _stream.Read(data, 0, data.Length);   //TO DO: handle System.IO.IOException
-                        result.AddRange(data.Take(bytes));
+                        buf.AddRange(data.Take(bytes));
+                        if (!_stream.DataAvailable)
+                        {
+                            HandleData(buf);
+                            buf.Clear();
+                        }
                     }
                     while (_stream.DataAvailable);
-                    if(result.Count > 0)
-                    {
-                        HandleData(result);
-                        result.Clear();
-                    }
-                   
                     
-
-
                 }
             }
             catch (SocketException ex)
@@ -76,6 +90,80 @@ namespace WebsocketAdapter
 #if DEBUG
             Console.WriteLine($"Connection closed, user id: {_userId}");
 #endif
+        }
+
+        private void Accumulate(byte[] bytes)
+        {
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                _accumulator.Add(bytes[i]);
+                if (bytes[i] == _magicSequence)
+                {
+                    DeconstructPacket(_accumulator);
+                    _accumulator.Clear();
+                   
+                }
+            }
+        }
+
+        private void DeconstructPacket(List<byte> data)
+        {
+            string res = Encoding.ASCII.GetString(data.Take(data.Count - 1).ToArray());
+            char packetType = res[0];
+            string payloadBase64 = res.Substring(1);
+            string payloadFromBase64 = Encoding.ASCII.GetString(Convert.FromBase64String(payloadBase64));
+            Console.WriteLine(payloadFromBase64);
+            var response = _applicationProcessor.Process(packetType, payloadFromBase64);
+            ConstructPacketAndWrite(response);
+        }
+
+        private void ConstructPacketAndWrite((char, string) response)
+        {
+            string combinedStr = String.Concat(response.Item1, Convert.ToBase64String(Encoding.ASCII.GetBytes(response.Item2)), '~');
+            byte[] res = Encoding.ASCII.GetBytes(combinedStr);
+
+            byte[] toSend = null;
+            if (res.Length < 126)
+            {
+                toSend = new byte[2 + res.Length];
+                toSend[0] = 129;
+                toSend[1] = (byte)res.Length;
+                for (int i = 0; i < res.Length; i++)
+                {
+                    toSend[i + 2] = res[i];
+                }
+            }
+            else if(res.Length > 125 && res.Length < 65536)
+            {
+                toSend = new byte[4 + res.Length];
+                byte[] intBytes = BitConverter.GetBytes(res.Length);
+                toSend[0] = 129;
+                toSend[1] = 126;
+                toSend[2] = intBytes[1];
+                toSend[3] = intBytes[0];
+                for(int i = 0; i< res.Length; i++)
+                {
+                    toSend[i + 4] = res[i];
+                }
+            }
+            else if(res.Length > 65535)
+            {
+                toSend = new byte[10 + res.Length];
+                byte[] intBytes = BitConverter.GetBytes(res.Length);
+                toSend[0] = 129;
+                toSend[1] = 127;
+
+                for(int i = 0; i < 8; i++)
+                {
+                    toSend[9-i] = (i > 3 ? (byte)0 : intBytes[i]);
+                }
+              
+                for (int i = 0; i < res.Length; i++)
+                {
+                    toSend[i + 5] = res[i];
+                }
+            }
+            _stream.Write(toSend);
         }
 
 
@@ -140,12 +228,11 @@ namespace WebsocketAdapter
                         decoded[i] = (byte)(bytes[offset + i] ^ masks[i % 4]);
 
                     string text = Encoding.UTF8.GetString(decoded);
+                    Accumulate(decoded);
                     Console.WriteLine("{0}", text);
                 }
                 else
                     Console.WriteLine("mask bit not set");
-
-                Console.WriteLine();
             }
         }
     
@@ -164,7 +251,8 @@ namespace WebsocketAdapter
 #if DEBUG
             Console.WriteLine($"Update chat event triggered, chat id: {chatId}");
 #endif
-            //_stream.Write(clientRecognizer.UpdateChat(chatId));
+            var updated = _applicationProcessor.UpdatePacketForChat(chatId);
+            //_stream.Write();  //TO DO: send updte packet
         }
     }
 }

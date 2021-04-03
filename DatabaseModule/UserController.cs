@@ -103,7 +103,6 @@ namespace MyMessengerBackend.DatabaseModule
             //var items3 = _chatsRepository.AsQueryable().SingleOrDefault(x => x.Id == new ObjectId("6052553af34ec222c2c36a57")).Messages.Where(x => x.Id.Timestamp > new ObjectId("60526d82fd5b47331d0f0401").Timestamp);  // BAD - gets all document from db
         }
 
-
         public List<Message> GetMessagesAfter(string chatId, string lastMessageId)
         {
             var pipeline = _chatsRepository.Collection.Aggregate().Match(x => x.Id == new ObjectId(chatId)).Project(i => new {x = i.Messages.Where(x => x.Id > new ObjectId(lastMessageId))});
@@ -122,11 +121,17 @@ namespace MyMessengerBackend.DatabaseModule
             return chat;
         }
 
-
         public List<string> GetAllConnectedChats()
         {
             var res = _chatsRepository.FilterBy(x => x.Members.Contains(_currentUser.Id.ToString()), x => x.Id);
             return res.Select(x => x.ToString()).ToList();
+        }
+
+        public List<UserInfo> GetUsers(string request, int limit)
+        {
+            List<User> searchResult = _usersRepository.FilterByLimited(x => x.Login.Contains(request) || x.FirstName.Contains(request) || x.LastName.Contains(request), limit).ToList();
+            List<UserInfo> casted = searchResult.ConvertAll(x => new UserInfo() { UserID = x.Id.ToString(), Login = x.Login, FirstName = x.FirstName, LastName = x.LastName, BirthDate = x.BirthDate });
+            return casted;
         }
 
         private bool VerifyUserPassword(User user, string inputPassword)
@@ -134,7 +139,6 @@ namespace MyMessengerBackend.DatabaseModule
             String base64Hashed = Convert.ToBase64String(GenerateSaltedHash(Encoding.ASCII.GetBytes(inputPassword), Convert.FromBase64String(user.PasswordSalt)));
             return base64Hashed == user.PasswordHash;
         }
-
 
         private byte[] GenerateSaltedHash(byte[] plainText, byte[] salt)
         {

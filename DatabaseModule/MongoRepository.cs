@@ -41,6 +41,12 @@ namespace MyMessengerBackend.DatabaseModule
             return Collection.Find(filterExpression).ToEnumerable();
         }
 
+        public virtual IEnumerable<TDocument> FilterByLimited(
+            Expression<Func<TDocument, bool>> filterExpression, int limit)
+        {
+            return Collection.Find(filterExpression).Limit(limit).ToEnumerable();
+        }
+
         public virtual IEnumerable<TProjected> FilterBy<TProjected>(
             Expression<Func<TDocument, bool>> filterExpression,
             Expression<Func<TDocument, TProjected>> projectionExpression)

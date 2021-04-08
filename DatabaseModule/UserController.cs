@@ -137,7 +137,8 @@ namespace MyMessengerBackend.DatabaseModule
         {
             List<User> searchResult = _usersRepository.FilterByLimited(x => x.Login.Contains(request) || x.FirstName.Contains(request) || x.LastName.Contains(request), limit).ToList();
             List<UserInfo> casted = searchResult.ConvertAll(x => new UserInfo() { UserID = x.Id.ToString(), Login = x.Login, FirstName = x.FirstName, LastName = x.LastName, BirthDate = x.BirthDate });
-            return casted;
+            
+            return casted.Where(x => x.UserID != _currentUser.Id.ToString()).ToList();
         }
 
         public UserInfo GetUserById(string id)

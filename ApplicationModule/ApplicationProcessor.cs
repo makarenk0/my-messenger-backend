@@ -92,6 +92,7 @@ namespace MyMessengerBackend.ApplicationModule
                     var sended = _userController.SendMessageToChat(send.ChatId, newMessage);
                     TriggerUsers(send.ChatId, sended);
                     return ('4', JsonSerializer.Serialize(new StatusResponsePayload("success", "Message was sent")));
+                //private chats
                 case '6':
                     InitChatPayload init = JsonSerializer.Deserialize<InitChatPayload>(payload);
 
@@ -102,18 +103,14 @@ namespace MyMessengerBackend.ApplicationModule
                     }
 
                     Message newInitMessage = new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = init.Body };
-                    Chat toAdd = new Chat() { Members = new List<string>() { _userController.User.Id.ToString(), init.UserId }, Messages = new List<Message>() { newInitMessage } };
+                    Chat toAdd = new Chat() { Members = init.UserIds, Messages = new List<Message>() { newInitMessage } , IsGroup = false};
                     string newChatId = _userController.AddChat(toAdd);
 
 
                  
                     TriggerUsers(newChatId, toAdd.Members);
-                    return ('6', JsonSerializer.Serialize(new UpdateChatPayload() { ChatId = newChatId, ChatName = "to do 11", IsNew = true, Members = toAdd.Members, 
+                    return ('6', JsonSerializer.Serialize(new UpdateChatPayload() { ChatId = newChatId, IsNew = true, Members = toAdd.Members, 
                         NewMessages = new List<ChatMessage>() { new ChatMessage(toAdd.Messages[0].Id.ToString(), toAdd.Messages[0].Sender, toAdd.Messages[0].Body) } }));
-                //Message mes = new Message() { Sender = "member2", Body = "Forth message add to db", Id = MongoDB.Bson.ObjectId.GenerateNewId() };
-                ////_userController.AddTestChat(new Chat() { Members = new List<string>() { "member1", "member2" }, Messages = new List<Message>() { mes } });
-                //_userController.UpdateTestChat(mes);
-                //return ('3', JsonSerializer.Serialize(new StatusResponsePayload("success", "Chat added")));
                 //Subscribing to updates, notifying server about last received messages in chats
                 case '7':
                     SubscriptionToUpdatePayload updatePayload = JsonSerializer.Deserialize<SubscriptionToUpdatePayload>(payload);
@@ -128,6 +125,26 @@ namespace MyMessengerBackend.ApplicationModule
                     _subscriptionUpdatePacketNumber = updatePayload.SubscriptionPacketNumber;
                     FormLastMessagesTable(updatePayload.LastChatsMessages);
                     return ('7', JsonSerializer.Serialize(GetZeroUpdate()));
+                //Group chats
+                case '8':
+                    InitChatPayload initGroupChat = JsonSerializer.Deserialize<InitChatPayload>(payload);
+
+                    var verifyResult8 = VerifySessionToken(initGroupChat.SessionToken);
+                    if (!verifyResult8.Item1)
+                    {
+                        return ('8', JsonSerializer.Serialize(verifyResult8.Item2));
+                    }
+
+                    Message newGroupInitMessage = new Message() { Id = ObjectId.GenerateNewId(), Sender = "System", 
+                        Body = String.Concat(_userController.User.FirstName, " ", _userController.User.LastName, " created a group") };
+                    Chat toAddGroup = new Chat() { Members = initGroupChat.UserIds, ChatName = initGroupChat.ChatName, Messages = new List<Message>() { newGroupInitMessage } , IsGroup = true};
+                    string newGroupChatId = _userController.AddChat(toAddGroup);
+
+
+
+                    TriggerUsers(newGroupChatId, toAddGroup.Members);
+                    return ('8', JsonSerializer.Serialize(new StatusResponsePayload("success", "Group created")));
+           
                 //Debug
                 case 'd':
                     return ('3', JsonSerializer.Serialize(new StatusResponsePayload("success", "Debug message")));
@@ -196,7 +213,7 @@ namespace MyMessengerBackend.ApplicationModule
                     chatName = wholeChat.ChatName;
                 }
                 
-                return new UpdateChatPayload() { ChatId = chatId, IsNew=true, ChatName = chatName, Members = wholeChat.Members, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };
+                return new UpdateChatPayload() { ChatId = chatId, IsNew=true, IsGroup= wholeChat.IsGroup, ChatName = chatName, Members = wholeChat.Members, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };
             }
             else //get only new chat messages
             {

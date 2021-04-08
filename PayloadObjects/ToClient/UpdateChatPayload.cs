@@ -19,6 +19,9 @@ namespace PayloadObjects.ToClient
         [JsonPropertyName("ChatName")]
         public string ChatName { get; set; }
 
+        [JsonPropertyName("IsGroup")]
+        public bool IsGroup { get; set; }
+
         [JsonPropertyName("Members")]
         public List<String> Members { get; set; }
     }

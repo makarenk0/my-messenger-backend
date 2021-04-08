@@ -53,7 +53,11 @@ namespace MyMessengerBackend.MyMessengerProtocol
             Packet response = _pktProcessor.Process(arrived);
             _applicationPacket.Clear();
             
-            return response.GetBytesForm();
+            if(response != null)
+            {
+                return response.GetBytesForm();
+            }
+            return new byte[0];
         }
     }
 }

@@ -143,9 +143,13 @@ namespace MyMessengerBackend.MyMessengerProtocol
 
         private Packet ProcessEncryptedPacket(Packet packet)
         {
-            string decryptedPayload = _encryptionModule.DecodeAndDecrypt(packet.Payload);
-            var response = _applicationProcessor.Process(packet.PacketType, decryptedPayload);
-            return EncryptPacket(new Packet(response.Item1, response.Item2));
+            var decryptedPayload = _encryptionModule.DecodeAndDecrypt(packet.Payload);
+            if (decryptedPayload.Item1)
+            {
+                var response = _applicationProcessor.Process(packet.PacketType, decryptedPayload.Item2);
+                return EncryptPacket(new Packet(response.Item1, response.Item2));
+            }
+            return null;
         }
 
         public Packet EncryptPacket(Packet packet)

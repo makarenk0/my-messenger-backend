@@ -41,15 +41,24 @@ namespace MyMessengerBackend.MyMessengerProtocol
             }
         }
 
-        public string DecodeAndDecrypt(string encrypted)
+        public (bool,string) DecodeAndDecrypt(string encrypted)
         {
             using (var csp = new AesCryptoServiceProvider())
             {
                 var d = GetCryptoTransform(csp, false);
                 byte[] output = Convert.FromBase64String(encrypted);
-                byte[] decryptedOutput = d.TransformFinalBlock(output, 0, output.Length);   //TO DO: handle exception Padding can not be removed ()
+                byte[] decryptedOutput = null;
+                try
+                {
+                    decryptedOutput = d.TransformFinalBlock(output, 0, output.Length);
+                }
+                catch(CryptographicException e)
+                {
+                    return (false, null);
+                }
+           
                 string decypted = Encoding.UTF8.GetString(decryptedOutput);
-                return decypted;
+                return (true, decypted);
             }
         }
 

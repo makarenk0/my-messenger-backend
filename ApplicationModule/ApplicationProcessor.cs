@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 using System.Text.Json;
+using System.Linq;
 
 namespace MyMessengerBackend.ApplicationModule
 {
@@ -91,11 +92,28 @@ namespace MyMessengerBackend.ApplicationModule
                     var sended = _userController.SendMessageToChat(send.ChatId, newMessage);
                     TriggerUsers(send.ChatId, sended);
                     return ('4', JsonSerializer.Serialize(new StatusResponsePayload("success", "Message was sent")));
-                case '5':
-                    Message mes = new Message() { Sender = "member2", Body = "Forth message add to db", Id = MongoDB.Bson.ObjectId.GenerateNewId() };
-                    //_userController.AddTestChat(new Chat() { Members = new List<string>() { "member1", "member2" }, Messages = new List<Message>() { mes } });
-                    _userController.UpdateTestChat(mes);
-                    return ('3', JsonSerializer.Serialize(new StatusResponsePayload("success", "Chat added")));
+                case '6':
+                    InitChatPayload init = JsonSerializer.Deserialize<InitChatPayload>(payload);
+
+                    var verifyResult5 = VerifySessionToken(init.SessionToken);
+                    if (!verifyResult5.Item1)
+                    {
+                        return ('6', JsonSerializer.Serialize(verifyResult5.Item2));
+                    }
+
+                    Message newInitMessage = new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = init.Body };
+                    Chat toAdd = new Chat() { Members = new List<string>() { _userController.User.Id.ToString(), init.UserId }, Messages = new List<Message>() { newInitMessage } };
+                    string newChatId = _userController.AddChat(toAdd);
+
+
+                 
+                    TriggerUsers(newChatId, toAdd.Members);
+                    return ('6', JsonSerializer.Serialize(new UpdateChatPayload() { ChatId = newChatId, ChatName = "to do 11", IsNew = true, Members = toAdd.Members, 
+                        NewMessages = new List<ChatMessage>() { new ChatMessage(toAdd.Messages[0].Id.ToString(), toAdd.Messages[0].Sender, toAdd.Messages[0].Body) } }));
+                //Message mes = new Message() { Sender = "member2", Body = "Forth message add to db", Id = MongoDB.Bson.ObjectId.GenerateNewId() };
+                ////_userController.AddTestChat(new Chat() { Members = new List<string>() { "member1", "member2" }, Messages = new List<Message>() { mes } });
+                //_userController.UpdateTestChat(mes);
+                //return ('3', JsonSerializer.Serialize(new StatusResponsePayload("success", "Chat added")));
                 //Subscribing to updates, notifying server about last received messages in chats
                 case '7':
                     SubscriptionToUpdatePayload updatePayload = JsonSerializer.Deserialize<SubscriptionToUpdatePayload>(payload);
@@ -166,7 +184,19 @@ namespace MyMessengerBackend.ApplicationModule
                 var wholeChat = _userController.GetWholeChat(chatId);
                 newMessages = wholeChat.Messages;
                 _lastChatsMessages[chatId] = newMessages.Count > 0 ? newMessages[newMessages.Count - 1].Id.ToString() : null;  //update last messages table, if chat is empty leave null
-                return new UpdateChatPayload() { ChatId = chatId, IsNew=true, ChatName = wholeChat.ChatName, Members = wholeChat.Members, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };
+
+                string chatName = "";
+                if (wholeChat.ChatName == null)
+                {
+                    var oppositeUser = _userController.GetUserById(wholeChat.Members.Where(x => x != _userController.User.Id.ToString()).First());
+                    chatName = String.Concat(oppositeUser.FirstName, " ", oppositeUser.LastName);
+                }
+                else
+                {
+                    chatName = wholeChat.ChatName;
+                }
+                
+                return new UpdateChatPayload() { ChatId = chatId, IsNew=true, ChatName = chatName, Members = wholeChat.Members, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };
             }
             else //get only new chat messages
             {

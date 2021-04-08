@@ -229,7 +229,7 @@ namespace WebsocketAdapter
 
                     string text = Encoding.UTF8.GetString(decoded);
                     Accumulate(decoded);
-                    Console.WriteLine("{0}", text);
+                    //Console.WriteLine("{0}", text);
                 }
                 else
                     Console.WriteLine("mask bit not set");

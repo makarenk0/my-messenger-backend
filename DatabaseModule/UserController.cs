@@ -75,9 +75,11 @@ namespace MyMessengerBackend.DatabaseModule
             return new LoginResponsePayload("success", "logged in successfully", Guid.NewGuid().ToString(), _currentUser.Id.ToString());
         }
 
-        public void AddTestChat(Chat chat)
+        public String AddChat(Chat chat)
         {
-            _chatsRepository.InsertOneAsync(chat);
+            chat.Id = ObjectId.GenerateNewId();
+            _chatsRepository.InsertOne(chat);
+            return chat.Id.ToString();
         }
 
         public List<string> SendMessageToChat(string chatId, Message mes)
@@ -110,7 +112,11 @@ namespace MyMessengerBackend.DatabaseModule
             
         
             var res = pipeline.SingleOrDefault();
-            return res.x.ToList();
+            if(res != null)
+            {
+                return res.x.ToList();
+            }
+            return new List<Message>();
         }
 
         public Chat GetWholeChat(string chatId)
@@ -132,6 +138,12 @@ namespace MyMessengerBackend.DatabaseModule
             List<User> searchResult = _usersRepository.FilterByLimited(x => x.Login.Contains(request) || x.FirstName.Contains(request) || x.LastName.Contains(request), limit).ToList();
             List<UserInfo> casted = searchResult.ConvertAll(x => new UserInfo() { UserID = x.Id.ToString(), Login = x.Login, FirstName = x.FirstName, LastName = x.LastName, BirthDate = x.BirthDate });
             return casted;
+        }
+
+        public UserInfo GetUserById(string id)
+        {
+            var res = _usersRepository.FindById(id);
+            return new UserInfo() { FirstName = res.FirstName, LastName = res.LastName };
         }
 
         private bool VerifyUserPassword(User user, string inputPassword)

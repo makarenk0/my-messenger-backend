@@ -54,6 +54,12 @@ namespace MyMessengerBackend.ApplicationModule
                 //Registartion
                 case '1':
                     RegistrationPayload registration = JsonSerializer.Deserialize<RegistrationPayload>(payload);
+                    if(String.IsNullOrWhiteSpace(registration.Login) || String.IsNullOrWhiteSpace(registration.FirstName) ||
+                        String.IsNullOrWhiteSpace(registration.LastName) || String.IsNullOrWhiteSpace(registration.Password) ||
+                        String.IsNullOrWhiteSpace(registration.BirthDate))
+                    {
+                        return ('1', JsonSerializer.Serialize(new StatusResponsePayload("error", "some of the fields are empty")));
+                    }
                     return ('1', JsonSerializer.Serialize(_userController.Register(registration)));
                 //Sign in
                 case '2':

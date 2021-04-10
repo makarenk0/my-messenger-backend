@@ -252,7 +252,7 @@ namespace WebsocketAdapter
             Console.WriteLine($"Update chat event triggered, chat id: {chatId}");
 #endif
             var updated = _applicationProcessor.UpdatePacketForChat(chatId);
-            //_stream.Write();  //TO DO: send updte packet
+            ConstructPacketAndWrite(updated); //send update packet
         }
     }
 }

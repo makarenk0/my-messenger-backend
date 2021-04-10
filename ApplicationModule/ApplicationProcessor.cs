@@ -65,7 +65,7 @@ namespace MyMessengerBackend.ApplicationModule
                         _userLoggedAction(_userController.User.Id.ToString());
                     }
                     return ('2', JsonSerializer.Serialize(result));
-                //Find user
+                //Find user (by id or by firstname, lastname, login)
                 case '3':
                     FindUserPayload find = JsonSerializer.Deserialize<FindUserPayload>(payload);
 
@@ -74,7 +74,11 @@ namespace MyMessengerBackend.ApplicationModule
                     {
                         return ('4', JsonSerializer.Serialize(verifyResult3.Item2));
                     }
-
+                    if(find.UserIds != null)
+                    {
+                        UsersInfoPayload usersInfoByIds = new UsersInfoPayload("success", "found users", _userController.GetUsersByIds(find.UserIds) );
+                        return ('3', JsonSerializer.Serialize(usersInfoByIds));
+                    }
                     UsersInfoPayload usersInfo = new UsersInfoPayload("success", "found users", _userController.GetUsers(find.FindUsersRequest, MAXIMUM_USERS_SEARCH_NUMBER));
                     return ('3', JsonSerializer.Serialize(usersInfo));
                 //Send message

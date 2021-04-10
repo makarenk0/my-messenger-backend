@@ -7,6 +7,7 @@ using MyMessengerBackend.MyMessengerProtocol;
 using System.Threading.Tasks;
 using MyMessengerBackend.ApplicationModule;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace MyMessengerBackend.NetworkModule
 {

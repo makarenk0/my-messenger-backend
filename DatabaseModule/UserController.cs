@@ -89,22 +89,6 @@ namespace MyMessengerBackend.DatabaseModule
             return usersOfChat;
         }
 
-        public void UpdateTestChat(Message mes)
-        {
-            //_chatsRepository.UpdateOneArrayAsync("6052553af34ec222c2c36a57", "Messages", mes);
-            //Chat ch = _chatsRepository.FindOneAsync(x => x.Id == new MongoDB.Bson.ObjectId("6052553af34ec222c2c36a57")).Result;
-            //  _chatsRepository.GetElementsFromArrayAfter("6052553af34ec222c2c36a57", "60526d82fd5b47331d0f0401");
-            //var filter = Builders<Chat>.Filter.And(Builders<Chat>.Filter.Eq("_id", new ObjectId("6052553af34ec222c2c36a57"))); //Builders<TDocument>.Filter.Eq("Messages._id", afterArrayId)
-            //var projection = Builders<Chat>.Projection.Expression(x => x.Messages.Where(y => y.Id.Timestamp > new ObjectId("60526d82fd5b47331d0f0401").Timestamp));
-            //_chatsRepository.AsQueryable().Where(x => x.Id == new ObjectId("6052553af34ec222c2c36a57")).Where(y => y.Messages.W)
-            //ch.
-
-            //List<Message> messages = GetMessagesAfter("6052553af34ec222c2c36a57", "60526d82fd5b47331d0f0401");
-
-
-            //var items3 = _chatsRepository.AsQueryable().SingleOrDefault(x => x.Id == new ObjectId("6052553af34ec222c2c36a57")).Messages.Where(x => x.Id.Timestamp > new ObjectId("60526d82fd5b47331d0f0401").Timestamp);  // BAD - gets all document from db
-        }
-
         public List<Message> GetMessagesAfter(string chatId, string lastMessageId)
         {
             var pipeline = _chatsRepository.Collection.Aggregate().Match(x => x.Id == new ObjectId(chatId)).Project(i => new {x = i.Messages.Where(x => x.Id > new ObjectId(lastMessageId))});
@@ -145,6 +129,13 @@ namespace MyMessengerBackend.DatabaseModule
         {
             var res = _usersRepository.FindById(id);
             return new UserInfo() { FirstName = res.FirstName, LastName = res.LastName };
+        }
+
+        public List<UserInfo> GetUsersByIds(List<string> ids)
+        {
+            var idsobj = ids.ConvertAll(x => new ObjectId(x));
+            var res = _usersRepository.FilterBy(x => idsobj.Contains(x.Id));
+            return res.Select(x => new UserInfo() { UserID = x.Id.ToString(), FirstName = x.FirstName, LastName = x.LastName, Login = x.Login, BirthDate = x.BirthDate}).ToList();
         }
 
         private bool VerifyUserPassword(User user, string inputPassword)

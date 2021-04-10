@@ -9,6 +9,10 @@ namespace PayloadObjects.FromClient
 {
     public class FindUserPayload : SessionTokenPayload
     {
+        [JsonPropertyName("UserIds")]
+        public List<string> UserIds { get; set; }
+
+
         [JsonPropertyName("FindUsersRequest")]
         public string FindUsersRequest { get; set; }
     }

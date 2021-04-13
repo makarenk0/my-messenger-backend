@@ -14,6 +14,7 @@ namespace MyMessengerBackend.DatabaseModule
 
         [BsonDateTimeOptions(DateOnly = true)]
         public DateTime BirthDate { get; set; }
+        public string AssistantChatId { get; set; }
         public string PasswordHash { get; set; }
         public string PasswordSalt { get; set; }
     }

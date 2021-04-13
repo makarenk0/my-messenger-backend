@@ -50,13 +50,27 @@ namespace MyMessengerBackend.DatabaseModule
             string dateFormat = "ddd MMM dd yyyy";
             DateTime date = DateTime.ParseExact(payload.BirthDate, dateFormat, CultureInfo.InvariantCulture);
 
-            User newUser = new User() { Login = payload.Login, FirstName = payload.FirstName, 
-                LastName = payload.LastName, BirthDate = date, 
+
+            ObjectId userId = ObjectId.GenerateNewId();
+            String assistantChatId = InitAssistantChat(userId.ToString());
+
+            User newUser = new User() {Id= userId, Login = payload.Login, FirstName = payload.FirstName, 
+                LastName = payload.LastName, BirthDate = date, AssistantChatId = assistantChatId,
                 PasswordHash = base64PasswordRepresentation, PasswordSalt = saltBase64Representation
             };
+
             _usersRepository.InsertOneAsync(newUser);
-    
+
+
             return new StatusResponsePayload("success", "Account successfully created!");
+        }
+
+        private string InitAssistantChat(string userId)
+        {
+
+            Message firstAssistantMessage = new Message() { Id = ObjectId.GenerateNewId(), Body = "Hello, I am your virtual assistant!", Sender = "assistant" };
+            Chat assistantChat = new Chat() { ChatName = "Virtual assistant", IsGroup = false, Members = new List<string>() { userId }, Messages = new List<Message>() { firstAssistantMessage } };
+            return AddChat(assistantChat);
         }
 
 
@@ -72,7 +86,15 @@ namespace MyMessengerBackend.DatabaseModule
                 return new LoginResponsePayload("error", "Password is invalid!");
             }
             _currentUser = user;
-            return new LoginResponsePayload("success", "logged in successfully", Guid.NewGuid().ToString(), _currentUser.Id.ToString());
+
+            UserInfo currentUserInfo = new UserInfo() { UserID = _currentUser.Id.ToString(), 
+                                                        Login = _currentUser.Login, 
+                                                        FirstName = _currentUser.FirstName, 
+                                                        LastName = _currentUser.LastName, 
+                                                        AssistantChatId = _currentUser.AssistantChatId, 
+                                                        BirthDate = _currentUser.BirthDate };
+
+            return new LoginResponsePayload("success", "logged in successfully", Guid.NewGuid().ToString(), currentUserInfo);
         }
 
         public String AddChat(Chat chat)

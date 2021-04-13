@@ -60,10 +60,15 @@ namespace MyMessengerBackend.NetworkModule
                     while (_stream.DataAvailable);    
                 }
             }
+            catch(IOException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             catch (SocketException ex)
             {
                 Console.WriteLine(ex.Message);
             }
+
 
             // Removing updating delegate from active users table 
             if (!String.IsNullOrEmpty(_userId))

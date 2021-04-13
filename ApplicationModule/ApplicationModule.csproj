@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DatabaseModule\DatabaseModule.csproj" />
     <ProjectReference Include="..\PayloadObjects\PayloadObjects.csproj" />
+    <ProjectReference Include="..\VirtualAssistant\VirtualAssistant.csproj" />
   </ItemGroup>
 
 </Project>

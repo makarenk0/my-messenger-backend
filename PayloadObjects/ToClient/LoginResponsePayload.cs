@@ -8,10 +8,10 @@ namespace PayloadObjects.ToClient
     public class LoginResponsePayload : StatusResponsePayload
     {
 
-        public LoginResponsePayload(string status, string details, string sessionToken, string id) : base(status, details)
+        public LoginResponsePayload(string status, string details, string sessionToken, UserInfo info) : base(status, details)
         {   
             SessionToken = sessionToken;
-            Id = id;
+            userInfo = info;
         }
 
         public LoginResponsePayload(string status, string details) : base(status, details)
@@ -22,7 +22,7 @@ namespace PayloadObjects.ToClient
         [JsonPropertyName("SessionToken")]
         public string SessionToken { get; set; }
 
-        [JsonPropertyName("Id")]
-        public string Id { get; set; }
+        [JsonPropertyName("UserInfo")]
+        public UserInfo userInfo { get; set; }
     }
 }

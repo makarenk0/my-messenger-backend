@@ -1,6 +1,7 @@
 ﻿using MyMessengerBackend.ApplicationModule;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -56,7 +57,7 @@ namespace WebsocketAdapter
 
                 EstablishWebsocketConnection();
 
-                List<byte> buf = new List<byte>();
+                List<byte> buf = new List<byte>(); 
                 while (!(client.Client.Poll(1000, SelectMode.SelectRead) && client.Available == 0))
                 {
 
@@ -74,6 +75,10 @@ namespace WebsocketAdapter
                     while (_stream.DataAvailable);
                     
                 }
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine(ex.Message);
             }
             catch (SocketException ex)
             {

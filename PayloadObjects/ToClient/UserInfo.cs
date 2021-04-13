@@ -24,5 +24,8 @@ namespace PayloadObjects.ToClient
 
         [JsonPropertyName("BirthDate")]
         public DateTime BirthDate { get; set; }
+
+        [JsonPropertyName("AssistantChatId")]
+        public string AssistantChatId { get; set; }
     }
 }

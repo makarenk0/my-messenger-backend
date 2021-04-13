@@ -1,0 +1,139 @@
+{
+	"Statements": {
+		">s (what's|what) >a * (new|news)": "/popular_news",
+		"* (any|some) * (new|news)": "/popular_news",
+		">s (how) * (about) * (new|news)": "/popular_news",
+		">s (how) * (about) * (some) * (new|news)": "/popular_news",
+
+		">s (what's) >p (i) >v (like) * (out)": "/weather",
+		">s (how's) >a * (weather)": "/weather",
+		">s (what's) >a * (weather)": "/weather",
+		">v * (weather)": "/weather",
+		">v >a * (weather)": "/weather",
+
+
+		"* (hello|hi|hey)": "Hello!|hi|Greetings|Hey)",
+		"* (yes)": "That's awesome!|)|(",
+		"* (no)": "That's great!|)|(",
+		"* (okay|ok|nice)": "Great",
+
+
+		">s (how) >v (are) >p (you)": "I'm great thanks)",
+		">s (how) >v (do) >p (you) >v (do)": "I'm fine thanks)",
+
+		">a * >v *": "Why * >v * ?",
+		"* >v *": "Why * >v * ?",
+		">v *": "I don't think i can >v . What about you?",
+
+
+		"* *": "Is it * or not?|Can you describe * ?|I cant remeber what is *",
+		">a * *": "Is it * or not?",
+
+
+		">p (it) >v (is) *": "Is it really * ?",
+
+		">p >v (am) >a *": "Are >r >p really >a * ? Tell me about this something.|Is it true? Are you >a * ?",
+		">p >v (am) *": "Are >r >p really * ? Tell me about this something.|Is it true? Are you * ?",
+
+		">p (you) >v (are) >a *": "Am >r >p really >a * ? Tell me about this something.|Is it true? Am i >a * ?",
+		">p (you) >v (are) *": "Am >r >p really * ? Tell me about this something.|Is it true? Am i * ?",
+
+		">p >v (are|is) >a *": " >v >r >p really >a * ? Tell me about this something.|Is it true? >v >r >p >a * ?",
+		">p >v (are|is) *": " >v >r >p really * ? Tell me about this something.|Is it true? >v >r >p * ?",
+
+
+
+		">p (he|she) >v (can|could|should|may|might|must|will) >v": "What else >v >p do ?",
+		">p (he|she) >v >a *": "What else does >p >v ?",
+		">p (he|she) >v *": "What else does >p >v ?",
+		">p (he|she) >v >v": "What else does >p >v ?",
+
+
+		">p >v (can|could|should|may|might|must|will) >v": "What else >r >v >r >p do ?",
+		">p >v >a *": "What else do >r >p >r >v ?",
+		">p >v *": "What else do >r >p >r >v ?",
+		">p >v >v": "What else do >r >p >r >v ?",
+		">p >v": "What else do >r >p >r >v ?",
+
+		">s (what) >v (is) * (your) * (name)": "My name is Phillip",
+		">s (what) >v (is) * (your) * (language)": "My native language is C#",
+		">s (what) >v >a *": "Maybe * >v >a thing?|Maybe * >v >a some virtual stuff?|Maybe * >v >a fiction?",
+		">s (what) >v >p >v": "Apples|Pears|Cherry|Banana|",
+
+		">s (when) >v >p >v": "Tommorow at 3 o'clock|At 5 o'clock|Yesterday|At 17 September",
+
+		">s (where) >v >p >v": "Not far from here|On the main square|In another city|In Africa",
+
+		">s (where) >v >p *": "From Kyiv",
+
+		">s (which) * >v >p >v": "Green one|Hard one|Special one|The greatest one",
+
+		">s (who) >v >v": "Me|That guy|Definitely not me|Mr. Smith",
+		">s (who) >v (are) >p (you)": "Really bad person|Good guy| I am an alien from Jupiter",
+		">s (who) >v >p": "Really bad person|Good guy| >r >p >r >v an alien from Jupiter",
+
+		">s (whom) >v >p >v": "Me|Mr. Adams|Definitely not me|Mr. Smith",
+
+		">s (whose) >v *": "My|Mr. Adams'|Definitely not mine|Mr. Smith's",
+
+		">s (how) * (long|far)": "5 steps",
+		">s (how) * (many|much)": "a lot|1000|1|0|-1|Array out of bound! Ha, ha, joking)",
+		">s (how) * (old)": "2 years|5 seconds|10 minutes",
+
+		">s (why) >v >p >v": "Because i'm not so smart|Because i'm you|Because it's terrible|Because i'm bot",
+		">s (why) >v >p": "Because >r >p am not a bot|Because it's funny",
+		">s (why)": "Because it's true"
+
+	},
+	"Replacements" : {
+		"i" : "you",
+		"you" : "i",
+		"am" : "are",
+		"are" : "am"
+	},
+
+	"GeneralQuestions" : [
+		"Do >p", "Are >p", "Did >p",  "Will >p", "Am >p", "Is >p", "Does >p", "Have >p", "Has >p",
+		"Could >p","Can >p", "May >p", "Should >p", "Would >p"],
+	"Pronouns" : ["i", "you", "they", "he", "she", "it", "we"],
+	"Articles" : ["a", "an", "the"],
+	"SpecialQuestions": [ "what", "what's", "whats", "when", "where", "which", "who", "whom", "whose", "why", "how", "how's" ],
+	"IgnoreList" : ["?", ".", ",", "!", "also", "too"],
+	"Verbs" : ["Accept","Accuse","Achieve","Acknowledge","Acquire","Adapt","Add","Adjust","Admire","Admit","Adopt","Adore",
+		"Advise","Afford","Agree","Aim","Allow","Announce","Anticipate","Apologize","Appear","Apply","Appreciate","Approach",
+		"Approve","Argue","Arise","Arrange","Arrive","Ask","Assume","Assure","Astonish","Attach","Attempt","Attend","Attract",
+		"Avoid","Awake","Bake","Bathe","Be", "Am", "Are", "Is","Bear","Beat","Become","Beg","Begin","Behave","Believe","Belong","Bend","Bet",
+		"Bind","Bite","Blow","Boil","Borrow","Bounce","Bow","Break","Breed","Bring","Broadcast","Build","Burn","Burst","Buy",
+		"Calculate","Can","Could","Care","Carry","Catch","Celebrate","Change","Choose","Chop","Claim","Climb","Cling","Come",
+		"Commit","Communicate","Compare","Compete","Complain","Complete","Concern","Confirm","Consent","Consider","Consist",
+		"Consult","Contain","Continue","Convince","Cook","Cost","Count","Crawl","Create","Creep","Criticize","Cry","Cut",
+		"Dance","Dare","Deal","Decide","Defer","Delay","Deliver","Demand","Deny","Depend","Describe","Deserve","Desire",
+		"Destroy","Determine","Develop","Differ","Disagree","Discover","Discuss","Dislike","Distribute","Dive","Do", "Did", "Doubt",
+		"Drag","Dream","Drill","Drink","Drive","Drop","Dry","Earn","Eat","Emphasize","Enable","Encourage","Engage","Enhance",
+		"Enjoy","Ensure","Entail","Enter","Establish","Examine","Exist","Expand","Expect","Experiment","Explain",
+		"Explore","Extend","Fail","Fall","Feed","Feel","Fight","Find","Finish","Fit","Fly","Fold","Follow","Forbid","Forget",
+		"Forgive","Freeze","Fry","Generate","Get","Give","Go","Grind","Grow","Hang","Happen","Hate","Have", "Has", "Had","Hear",
+		"Hesitate","Hide","Hit","Hold","Hop","Hope","Hug","Hurry","Hurt","Identify","Ignore","Illustrate","Imagine","Imply",
+		"Impress","Improve","Include","Incorporate","Indicate","Inform","Insist","Install","Intend","Introduce","Invest",
+		"Investigate","Involve","Iron","Jog","Jump","Justify","Keep","Kick","Kill","Kiss","Kneel","Knit","Know","Lack","Laugh","Lay",
+		"Lead","Lean","Leap","Learn","Leave","Lend","Lie","Lift","Light","Like","Listen", "Live","Look","Lose","Love","Maintain","Make",
+		"Manage","Matter","May","Mean","Measure","Meet","Melt","Mention","Might","Mind","Miss","Mix","Mow","Must","Need","Neglect",
+		"Negotiate","Observe","Obtain","Occur","Offer","Open","Operate","Order","Organize","Ought","Overcome","Overtake","Owe",
+		"Own","Paint","Participate","Pay","Peel","Perform","Persuade","Pinch","Plan","Play","Point","Possess","Postpone","Pour",
+		"Practice","Prefer","Prepare","Pretend","Prevent","Proceed","Promise","Propose","Protect","Prove","Pull","Punch","Pursue",
+		"Push","Put","Qualify","Quit","React","Read","Realize","Recall","Receive","Recollect","Recommend","Reduce","Refer",
+		"Reflect","Refuse","Regret","Relate","Relax","Relieve","Rely","Remain","Remember","Remind","Repair","Replace","Represent"
+		,"Require","Resent","Resist","Retain","Retire","Rid","Ride","Ring","Rise","Risk","Roast","Run","Sanction","Satisfy","Say"
+		,"Scrub","See","Seem","Sell","Send","Serve","Set","Settle","Sew","Shake","Shall","Shed","Shine","Shoot","Should","Show",
+		"Shrink","Shut","Sing","Sink","Sit","Ski","Sleep","Slice","Slide","Slip","Smell","Snore","Solve","Sow","Speak","Specify",
+		"Spell","Spend","Spill","Spit","Spread","Squat","Stack","Stand","Start","Steal","Stick","Sting","Stink","Stir","Stop",
+		"Stretch","Strike","Struggle","Study","Submit","Succeed","Suffer","Suggest","Supply","Suppose","Surprise","Survive",
+		"Swear","Sweep","Swell","Swim","Swing","Take","Talk","Taste","Teach","Tear","Tell","Tend","Think","Threaten","Throw",
+		"Tiptoe","Tolerate","Translate","Try","Understand","Vacuum","Value","Vary","Volunteer","Wait","Wake","Walk","Want",
+		"Warn","Wash","Watch","Wave","Wear","Weep","Weigh","Whip","Will","Win","Wish","Would","Write","Know","Believe",
+		"Understand","Doubt","Think","Suppose","Recognise","Forget","Remember","Imagine","Mean","Agree","Disagree","Deny",
+		"Promise","Satisfy","Realise","Appear","Astonish","Please","Impress","Surprise","Concern","Possession","Have","Own",
+		"Possess","Lack","Consist","Involve","Include","Contain","Emotions","Love","Like","Dislike","Hate","Adore","Prefer",
+		"Care","Mind","Want","Need","Desire","Wish","Hope","Appreciate","Value","Cost","Measure","Weigh","Owe","Seem","Fit",
+		"Depend","Matter"]
+}

@@ -10,6 +10,7 @@ using System.Configuration;
 using System.Text;
 using System.Text.Json;
 using System.Linq;
+using VirtualAssistant;
 
 namespace MyMessengerBackend.ApplicationModule
 {
@@ -33,8 +34,11 @@ namespace MyMessengerBackend.ApplicationModule
         public delegate void UpdateAction(string chatId);
         public static ConcurrentDictionary<string, UpdateAction> _activeUsersTable;
 
+        private VirtualAssistantEntryPoint _virtualAssistant;
 
         private Dictionary<string, string> _lastChatsMessages;
+
+        
 
         public ApplicationProcessor(UserLoggedIn action)
         {
@@ -45,6 +49,8 @@ namespace MyMessengerBackend.ApplicationModule
             _userController = new UserController(new MongoRepository<User>(_dbSettings), new MongoRepository<Chat>(_dbSettings));
             _userLoggedAction = action;
             _lastChatsMessages = new Dictionary<string, string>();
+
+            _virtualAssistant = new VirtualAssistantEntryPoint(ConfigurationManager.AppSettings["assistant_file"]);
         }
 
         public (char, string) Process(char packetType, string payload)
@@ -154,7 +160,21 @@ namespace MyMessengerBackend.ApplicationModule
 
                     TriggerUsers(newGroupChatId, toAddGroup.Members);
                     return ('8', JsonSerializer.Serialize(new StatusResponsePayload("success", "Group created")));
-           
+                // Virtual assistant
+                case 'a':
+                    SendChatMessagePayload messageToAssistant = JsonSerializer.Deserialize<SendChatMessagePayload>(payload);
+
+                    var verifyResultA = VerifySessionToken(messageToAssistant.SessionToken);
+                    if (!verifyResultA.Item1)
+                    {
+                        return ('a', JsonSerializer.Serialize(verifyResultA.Item2));
+                    }
+                    string assistantResponse = _virtualAssistant.Process(messageToAssistant.Body);
+                    _userController.SendMessageToChat(messageToAssistant.ChatId, new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = messageToAssistant.Body });
+                    var sendedToUsers = _userController.SendMessageToChat(messageToAssistant.ChatId, new Message() { Id = ObjectId.GenerateNewId(), Sender = "assistant", Body = assistantResponse });
+                    TriggerUsers(messageToAssistant.ChatId, sendedToUsers);
+                    return ('a', JsonSerializer.Serialize(JsonSerializer.Serialize(new StatusResponsePayload("success", "Message to assistant was sent"))));
+
                 //Debug
                 case 'd':
                     return ('3', JsonSerializer.Serialize(new StatusResponsePayload("success", "Debug message")));

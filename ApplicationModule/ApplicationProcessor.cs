@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Linq;
 using VirtualAssistant;
+using ApplicationModule;
 
 namespace MyMessengerBackend.ApplicationModule
 {
@@ -38,11 +39,19 @@ namespace MyMessengerBackend.ApplicationModule
 
         private Dictionary<string, string> _lastChatsMessages;
 
-        
+        private string Test(object o)
+        {
+            return "";
+        }
+
+
+        private delegate string InputProcess(object request);
+        private Dictionary<char, InputProcess> handlers;
+
+
 
         public ApplicationProcessor(UserLoggedIn action)
         {
-            //_userSubscribedForUpdates = false;
             _dbSettings = new MongoDbSettings();
             _dbSettings.ConnectionString = ConfigurationManager.AppSettings["db_connection"];
             _dbSettings.DatabaseName = ConfigurationManager.AppSettings["db_name"];
@@ -51,137 +60,192 @@ namespace MyMessengerBackend.ApplicationModule
             _lastChatsMessages = new Dictionary<string, string>();
 
             _virtualAssistant = new VirtualAssistantEntryPoint(ConfigurationManager.AppSettings["assistant_file"]);
+
+            RegisterHandlers();
+            
+        }
+
+        private void RegisterHandlers()
+        {
+            handlers = new Dictionary<char, InputProcess>();
+            handlers.TryAdd('1', Registration);
+            handlers.TryAdd('2', LogIn);
+            handlers.TryAdd('3', FindUsers);
+            handlers.TryAdd('4', SendMessage);
+            handlers.TryAdd('6', InitPrivateChat);
+            handlers.TryAdd('7', SubscribeOnUpdates);
+            handlers.TryAdd('8', InitPublicChat);
+            handlers.TryAdd('a', AssistantRequest);
         }
 
         public (char, string) Process(char packetType, string payload)
         {
-            switch (packetType)
+            object deserializedRequest;
+            try
             {
-                //Registartion
-                case '1':
-                    RegistrationPayload registration = JsonSerializer.Deserialize<RegistrationPayload>(payload);
-                    if(String.IsNullOrWhiteSpace(registration.Login) || String.IsNullOrWhiteSpace(registration.FirstName) ||
-                        String.IsNullOrWhiteSpace(registration.LastName) || String.IsNullOrWhiteSpace(registration.Password) ||
-                        String.IsNullOrWhiteSpace(registration.BirthDate))
-                    {
-                        return ('1', JsonSerializer.Serialize(new StatusResponsePayload("error", "some of the fields are empty")));
-                    }
-                    return ('1', JsonSerializer.Serialize(_userController.Register(registration)));
-                //Sign in
-                case '2':
-                    LoginPayload login = JsonSerializer.Deserialize<LoginPayload>(payload);
-                    var result = _userController.Login(login);
-                    if(result.Status == "success")
-                    {
-                        _sessionToken = result.SessionToken;
-                        _userLoggedAction(_userController.User.Id.ToString());
-                    }
-                    return ('2', JsonSerializer.Serialize(result));
-                //Find user (by id or by firstname, lastname, login)
-                case '3':
-                    FindUserPayload find = JsonSerializer.Deserialize<FindUserPayload>(payload);
-
-                    var verifyResult3 = VerifySessionToken(find.SessionToken);
-                    if (!verifyResult3.Item1)
-                    {
-                        return ('4', JsonSerializer.Serialize(verifyResult3.Item2));
-                    }
-                    if(find.UserIds != null)
-                    {
-                        UsersInfoPayload usersInfoByIds = new UsersInfoPayload("success", "found users", _userController.GetUsersByIds(find.UserIds) );
-                        return ('3', JsonSerializer.Serialize(usersInfoByIds));
-                    }
-                    UsersInfoPayload usersInfo = new UsersInfoPayload("success", "found users", _userController.GetUsers(find.FindUsersRequest, MAXIMUM_USERS_SEARCH_NUMBER));
-                    return ('3', JsonSerializer.Serialize(usersInfo));
-                //Send message
-                case '4': 
-                    SendChatMessagePayload send = JsonSerializer.Deserialize<SendChatMessagePayload>(payload);
-
-                    var verifyResult4 = VerifySessionToken(send.SessionToken);
-                    if (!verifyResult4.Item1)
-                    {
-                        return ('4', JsonSerializer.Serialize(verifyResult4.Item2));
-                    }
-
-                    Message newMessage = new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = send.Body };
-                    
-                    var sended = _userController.SendMessageToChat(send.ChatId, newMessage);
-                    TriggerUsers(send.ChatId, sended);
-                    return ('4', JsonSerializer.Serialize(new StatusResponsePayload("success", "Message was sent")));
-                //private chats
-                case '6':
-                    InitChatPayload init = JsonSerializer.Deserialize<InitChatPayload>(payload);
-
-                    var verifyResult5 = VerifySessionToken(init.SessionToken);
-                    if (!verifyResult5.Item1)
-                    {
-                        return ('6', JsonSerializer.Serialize(verifyResult5.Item2));
-                    }
-
-                    Message newInitMessage = new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = init.Body };
-                    Chat toAdd = new Chat() { Members = init.UserIds, Messages = new List<Message>() { newInitMessage } , IsGroup = false};
-                    string newChatId = _userController.AddChat(toAdd);
-
-
-                 
-                    TriggerUsers(newChatId, toAdd.Members);
-                    return ('6', JsonSerializer.Serialize(new UpdateChatPayload() { ChatId = newChatId, IsNew = true, Members = toAdd.Members, 
-                        NewMessages = new List<ChatMessage>() { new ChatMessage(toAdd.Messages[0].Id.ToString(), toAdd.Messages[0].Sender, toAdd.Messages[0].Body) } }));
-                //Subscribing to updates, notifying server about last received messages in chats
-                case '7':
-                    SubscriptionToUpdatePayload updatePayload = JsonSerializer.Deserialize<SubscriptionToUpdatePayload>(payload);
-
-                    var verifyResult7 = VerifySessionToken(updatePayload.SessionToken);
-                    if (!verifyResult7.Item1)
-                    {
-                        return ('7', JsonSerializer.Serialize(verifyResult7.Item2));
-                    }
-
-                    //_userSubscribedForUpdates = true;
-                    _subscriptionUpdatePacketNumber = updatePayload.SubscriptionPacketNumber;
-                    FormLastMessagesTable(updatePayload.LastChatsMessages);
-                    return ('7', JsonSerializer.Serialize(GetZeroUpdate()));
-                //Group chats
-                case '8':
-                    InitChatPayload initGroupChat = JsonSerializer.Deserialize<InitChatPayload>(payload);
-
-                    var verifyResult8 = VerifySessionToken(initGroupChat.SessionToken);
-                    if (!verifyResult8.Item1)
-                    {
-                        return ('8', JsonSerializer.Serialize(verifyResult8.Item2));
-                    }
-
-                    Message newGroupInitMessage = new Message() { Id = ObjectId.GenerateNewId(), Sender = "System", 
-                        Body = String.Concat(_userController.User.FirstName, " ", _userController.User.LastName, " created a group") };
-                    Chat toAddGroup = new Chat() { Members = initGroupChat.UserIds, ChatName = initGroupChat.ChatName, Messages = new List<Message>() { newGroupInitMessage } , IsGroup = true};
-                    string newGroupChatId = _userController.AddChat(toAddGroup);
-
-
-
-                    TriggerUsers(newGroupChatId, toAddGroup.Members);
-                    return ('8', JsonSerializer.Serialize(new StatusResponsePayload("success", "Group created")));
-                // Virtual assistant
-                case 'a':
-                    SendChatMessagePayload messageToAssistant = JsonSerializer.Deserialize<SendChatMessagePayload>(payload);
-
-                    var verifyResultA = VerifySessionToken(messageToAssistant.SessionToken);
-                    if (!verifyResultA.Item1)
-                    {
-                        return ('a', JsonSerializer.Serialize(verifyResultA.Item2));
-                    }
-                    string assistantResponse = _virtualAssistant.Process(messageToAssistant.Body);
-                    _userController.SendMessageToChat(messageToAssistant.ChatId, new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = messageToAssistant.Body });
-                    var sendedToUsers = _userController.SendMessageToChat(messageToAssistant.ChatId, new Message() { Id = ObjectId.GenerateNewId(), Sender = "assistant", Body = assistantResponse });
-                    TriggerUsers(messageToAssistant.ChatId, sendedToUsers);
-                    return ('a', JsonSerializer.Serialize(JsonSerializer.Serialize(new StatusResponsePayload("success", "Message to assistant was sent"))));
-
-                //Debug
-                case 'd':
-                    return ('3', JsonSerializer.Serialize(new StatusResponsePayload("success", "Debug message")));
-                default:
-                    return ('9', JsonSerializer.Serialize(new StatusResponsePayload("error", "Unrecognized packet type")));
+                deserializedRequest = JsonSerializer.Deserialize(payload, ObjectTypeMapper.table[packetType]);
             }
+            catch(JsonException e)
+            {
+                return (packetType, JsonSerializer.Serialize(new StatusResponsePayload("error", "Invalid json string")));
+            }
+            catch (ArgumentNullException e)
+            {
+                return (packetType, JsonSerializer.Serialize(new StatusResponsePayload("error", "Nothing in packet")));
+            }
+
+            return (packetType, handlers[packetType](deserializedRequest));
+            
         }
+
+
+
+        private string Registration(object request)
+        {
+            RegistrationPayload registration = (RegistrationPayload)request;
+            if (String.IsNullOrWhiteSpace(registration.Login) || String.IsNullOrWhiteSpace(registration.FirstName) ||
+                String.IsNullOrWhiteSpace(registration.LastName) || String.IsNullOrWhiteSpace(registration.Password) ||
+                String.IsNullOrWhiteSpace(registration.BirthDate))
+            {
+                return JsonSerializer.Serialize(new StatusResponsePayload("error", "Some of the fields are empty"));
+            }
+            return JsonSerializer.Serialize(_userController.Register(registration));
+        }
+
+
+        private string LogIn(object request)
+        {
+            LoginPayload login = (LoginPayload)request;
+            var result = _userController.Login(login);
+            if (result.Status == "success")
+            {
+                _sessionToken = result.SessionToken;
+                _userLoggedAction(_userController.User.Id.ToString());
+            }
+            return JsonSerializer.Serialize(result);
+        }
+
+        private string FindUsers(object request)
+        {
+            FindUserPayload find = (FindUserPayload)request;
+
+            var verifyResult = VerifySessionToken(find.SessionToken);
+            if (!verifyResult.Item1)
+            {
+                return JsonSerializer.Serialize(verifyResult.Item2);
+            }
+            if (find.UserIds != null)
+            {
+                UsersInfoPayload usersInfoByIds = new UsersInfoPayload("success", "found users", _userController.GetUsersByIds(find.UserIds));
+                return JsonSerializer.Serialize(usersInfoByIds);
+            }
+            UsersInfoPayload usersInfo = new UsersInfoPayload("success", "found users", _userController.GetUsers(find.FindUsersRequest, MAXIMUM_USERS_SEARCH_NUMBER));
+            return JsonSerializer.Serialize(usersInfo);
+        }
+
+        private string SendMessage(object request)
+        {
+            SendChatMessagePayload send = (SendChatMessagePayload)request;
+
+            var verifyResult = VerifySessionToken(send.SessionToken);
+            if (!verifyResult.Item1)
+            {
+                return JsonSerializer.Serialize(verifyResult.Item2);
+            }
+
+            Message newMessage = new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = send.Body };
+
+            var sended = _userController.SendMessageToChat(send.ChatId, newMessage);
+            TriggerUsers(send.ChatId, sended);
+            return JsonSerializer.Serialize(new StatusResponsePayload("success", "Message was sent"));
+        }
+
+        private string InitPrivateChat(object request)
+        {
+            InitChatPayload init = (InitChatPayload)request;
+
+            var verifyResult = VerifySessionToken(init.SessionToken);
+            if (!verifyResult.Item1)
+            {
+                return JsonSerializer.Serialize(verifyResult.Item2);
+            }
+
+            Message newInitMessage = new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = init.Body };
+            Chat toAdd = new Chat() { Members = init.UserIds, Messages = new List<Message>() { newInitMessage }, IsGroup = false };
+            string newChatId = _userController.AddChat(toAdd);
+
+
+
+            TriggerUsers(newChatId, toAdd.Members);
+            return JsonSerializer.Serialize(new UpdateChatPayload()
+            {
+                ChatId = newChatId,
+                IsNew = true,
+                Members = toAdd.Members,
+                NewMessages = new List<ChatMessage>() { new ChatMessage(toAdd.Messages[0].Id.ToString(), toAdd.Messages[0].Sender, toAdd.Messages[0].Body) }
+            });
+        }
+
+        private string SubscribeOnUpdates(object request)
+        {
+            SubscriptionToUpdatePayload updatePayload = (SubscriptionToUpdatePayload)request;
+
+            var verifyResult = VerifySessionToken(updatePayload.SessionToken);
+            if (!verifyResult.Item1)
+            {
+                return JsonSerializer.Serialize(verifyResult.Item2);
+            }
+
+            _subscriptionUpdatePacketNumber = updatePayload.SubscriptionPacketNumber;
+            FormLastMessagesTable(updatePayload.LastChatsMessages);
+            return JsonSerializer.Serialize(GetZeroUpdate());
+        }
+
+
+
+
+        private string InitPublicChat(object request)
+        {
+
+            InitChatPayload initGroupChat = (InitChatPayload)request;
+
+            var verifyResult = VerifySessionToken(initGroupChat.SessionToken);
+            if (!verifyResult.Item1)
+            {
+                return JsonSerializer.Serialize(verifyResult.Item2);
+            }
+
+            Message newGroupInitMessage = new Message()
+            {
+                Id = ObjectId.GenerateNewId(),
+                Sender = "System",
+                Body = String.Concat(_userController.User.FirstName, " ", _userController.User.LastName, " created a group")
+            };
+            Chat toAddGroup = new Chat() { Members = initGroupChat.UserIds, ChatName = initGroupChat.ChatName, Messages = new List<Message>() { newGroupInitMessage }, IsGroup = true };
+            string newGroupChatId = _userController.AddChat(toAddGroup);
+
+            TriggerUsers(newGroupChatId, toAddGroup.Members);
+            return JsonSerializer.Serialize(new StatusResponsePayload("success", "Group created"));
+        }
+
+
+        private string AssistantRequest(object request)
+        {
+            SendChatMessagePayload messageToAssistant = (SendChatMessagePayload)request;
+
+            var verifyResult = VerifySessionToken(messageToAssistant.SessionToken);
+            if (!verifyResult.Item1)
+            {
+                return JsonSerializer.Serialize(verifyResult.Item2);
+            }
+            string assistantResponse = _virtualAssistant.Process(messageToAssistant.Body);
+            _userController.SendMessageToChat(messageToAssistant.ChatId, new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = messageToAssistant.Body });
+            var sendedToUsers = _userController.SendMessageToChat(messageToAssistant.ChatId, new Message() { Id = ObjectId.GenerateNewId(), Sender = "assistant", Body = assistantResponse });
+            TriggerUsers(messageToAssistant.ChatId, sendedToUsers);
+
+            return JsonSerializer.Serialize(JsonSerializer.Serialize(new StatusResponsePayload("success", "Message to assistant was sent")));
+        }
+
 
         private void TriggerUsers(string chatId, List<string> users)
         {

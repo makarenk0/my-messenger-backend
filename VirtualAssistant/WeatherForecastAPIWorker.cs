@@ -12,7 +12,7 @@ namespace VirtualAssistant
         private const string api_key = "5366cbefcc87eb47b5007c54e7ab73e7";
         private const string get_current_weather = "http://api.openweathermap.org/data/2.5/weather?q=CURRENT_CITY&units=metric";
 
-        private const string get_weather_icon = " http://openweathermap.org/img/wn/ICON_ID@2x.png";
+        private const string get_weather_icon = "http://openweathermap.org/img/wn/ICON_ID@2x.png";
 
         public WeatherForecastAPIWorker()
         {
@@ -47,7 +47,7 @@ namespace VirtualAssistant
                     $"The minimum temperature in city is {minInCity}. \nand maximum is {maxInCity}. \n",
                     $"Current pressure is {pressure}. \n",
                     $"And humidity is {humidity}%.\n",
-                    $"The speed of wind is about {windSpeed} m/s",
+                    $"The speed of wind is about {windSpeed} m/s ",
                     get_weather_icon.Replace("ICON_ID", iconName));
             }
 

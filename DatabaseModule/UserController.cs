@@ -35,6 +35,10 @@ namespace MyMessengerBackend.DatabaseModule
 
         public StatusResponsePayload Register(RegistrationPayload payload)
         {
+            
+            
+            
+            
             User checkLogin = _usersRepository.FindOneAsync(x => x.Login == payload.Login).Result;
             if(checkLogin != null)
             {

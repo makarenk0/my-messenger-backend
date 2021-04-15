@@ -24,7 +24,6 @@ namespace MyMessengerBackend.ApplicationModule
 
         private string _sessionToken;
 
-        //private bool _userSubscribedForUpdates;
         private char _subscriptionUpdatePacketNumber;
 
 
@@ -38,12 +37,6 @@ namespace MyMessengerBackend.ApplicationModule
         private VirtualAssistantEntryPoint _virtualAssistant;
 
         private Dictionary<string, string> _lastChatsMessages;
-
-        private string Test(object o)
-        {
-            return "";
-        }
-
 
         private delegate string InputProcess(object request);
         private Dictionary<char, InputProcess> handlers;
@@ -177,13 +170,8 @@ namespace MyMessengerBackend.ApplicationModule
 
 
             TriggerUsers(newChatId, toAdd.Members);
-            return JsonSerializer.Serialize(new UpdateChatPayload()
-            {
-                ChatId = newChatId,
-                IsNew = true,
-                Members = toAdd.Members,
-                NewMessages = new List<ChatMessage>() { new ChatMessage(toAdd.Messages[0].Id.ToString(), toAdd.Messages[0].Sender, toAdd.Messages[0].Body) }
-            });
+            var message = new ChatMessage(toAdd.Messages[0].Id.ToString(), toAdd.Messages[0].Sender, toAdd.Messages[0].Body);
+            return JsonSerializer.Serialize(new UpdateChatPayload(newChatId, true, toAdd.Members, message));
         }
 
         private string SubscribeOnUpdates(object request)
@@ -306,15 +294,16 @@ namespace MyMessengerBackend.ApplicationModule
                 {
                     chatName = wholeChat.ChatName;
                 }
-                
-                return new UpdateChatPayload() { ChatId = chatId, IsNew=true, IsGroup= wholeChat.IsGroup, ChatName = chatName, Members = wholeChat.Members, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };
+                var newMessagesPayload = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body));
+                return new UpdateChatPayload(chatId, true, wholeChat.IsGroup, chatName, wholeChat.Members, newMessagesPayload);
             }
             else //get only new chat messages
             {
                 var newMessagesChat = _userController.GetMessagesAfter(chatId, _lastChatsMessages[chatId]);
                 newMessages = newMessagesChat;
                 _lastChatsMessages[chatId] = newMessages.Count > 0 ? newMessages[newMessages.Count - 1].Id.ToString() : _lastChatsMessages[chatId];  //update last messages table, if no new messages - leave as it was
-                return new UpdateChatPayload() { ChatId = chatId, IsNew = false, ChatName = null, Members = null, NewMessages = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body)) };  //TO DO: debug
+                var newMessagesPayload = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body));
+                return new UpdateChatPayload(chatId, false, null, newMessagesPayload);  //retrieve members from database in case of new members added
             }
             
         }

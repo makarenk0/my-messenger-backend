@@ -228,7 +228,7 @@ namespace MyMessengerBackend.ApplicationModule
             }
             string assistantResponse = _virtualAssistant.Process(messageToAssistant.Body);
             _userController.SendMessageToChat(messageToAssistant.ChatId, new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = messageToAssistant.Body });
-            var sendedToUsers = _userController.SendMessageToChat(messageToAssistant.ChatId, new Message() { Id = ObjectId.GenerateNewId(), Sender = "assistant", Body = assistantResponse });
+            var sendedToUsers = _userController.SendMessageToChat(_userController.User.AssistantChatId, new Message() { Id = ObjectId.GenerateNewId(), Sender = "assistant", Body = assistantResponse });
             TriggerUsers(messageToAssistant.ChatId, sendedToUsers);
 
             return JsonSerializer.Serialize(JsonSerializer.Serialize(new StatusResponsePayload("success", "Message to assistant was sent")));

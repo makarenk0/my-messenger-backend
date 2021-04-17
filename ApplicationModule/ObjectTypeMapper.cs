@@ -20,12 +20,5 @@ namespace ApplicationModule
             { '8', typeof(InitChatPayload) },
             { 'a', typeof(SendChatMessagePayload) },
         };
-
-
-        public static Object getDes(string input)
-        {
-            var request = JsonSerializer.Deserialize(input, table['1']);
-            return request;
-        }
     }
 }

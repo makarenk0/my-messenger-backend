@@ -88,7 +88,11 @@ namespace MyMessengerBackend.NetworkModule
             Console.WriteLine($"User with id {userId} logged in");
 #endif
             _userId = userId;
-            ApplicationProcessor._activeUsersTable.TryAdd(_userId, SendUpdate);
+            bool added = ApplicationProcessor._activeUsersTable.TryAdd(_userId, SendUpdate);
+            if (!added)
+            {
+                Console.WriteLine("USER WAS ALREADY LOGGED IN!!!");
+            }
         }
 
         private void SendUpdate(string chatId)

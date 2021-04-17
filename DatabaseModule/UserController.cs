@@ -35,10 +35,7 @@ namespace MyMessengerBackend.DatabaseModule
 
         public StatusResponsePayload Register(RegistrationPayload payload)
         {
-            
-            
-            
-            
+
             User checkLogin = _usersRepository.FindOneAsync(x => x.Login == payload.Login).Result;
             if(checkLogin != null)
             {
@@ -91,12 +88,7 @@ namespace MyMessengerBackend.DatabaseModule
             }
             _currentUser = user;
 
-            UserInfo currentUserInfo = new UserInfo() { UserID = _currentUser.Id.ToString(), 
-                                                        Login = _currentUser.Login, 
-                                                        FirstName = _currentUser.FirstName, 
-                                                        LastName = _currentUser.LastName, 
-                                                        AssistantChatId = _currentUser.AssistantChatId, 
-                                                        BirthDate = _currentUser.BirthDate };
+            UserInfo currentUserInfo = new UserInfo(_currentUser.Id.ToString(), _currentUser.Login, _currentUser.FirstName, _currentUser.LastName,  _currentUser.AssistantChatId, _currentUser.BirthDate );
 
             return new LoginResponsePayload("success", "logged in successfully", Guid.NewGuid().ToString(), currentUserInfo);
         }
@@ -146,22 +138,22 @@ namespace MyMessengerBackend.DatabaseModule
         public List<UserInfo> GetUsers(string request, int limit)
         {
             List<User> searchResult = _usersRepository.FilterByLimited(x => x.Login.Contains(request) || x.FirstName.Contains(request) || x.LastName.Contains(request), limit).ToList();
-            List<UserInfo> casted = searchResult.ConvertAll(x => new UserInfo() { UserID = x.Id.ToString(), Login = x.Login, FirstName = x.FirstName, LastName = x.LastName, BirthDate = x.BirthDate });
+            List<UserInfo> casted = searchResult.ConvertAll(x => new UserInfo(x.Id.ToString(), x.Login, x.FirstName, x.LastName, x.BirthDate));
             
-            return casted.Where(x => x.UserID != _currentUser.Id.ToString()).ToList();
+            return casted.Where(x => x.UserId != _currentUser.Id.ToString()).ToList();
         }
 
         public UserInfo GetUserById(string id)
         {
             var res = _usersRepository.FindById(id);
-            return new UserInfo() { FirstName = res.FirstName, LastName = res.LastName };
+            return new UserInfo(res.Id.ToString(), res.Login, res.FirstName, res.LastName, res.BirthDate);
         }
 
         public List<UserInfo> GetUsersByIds(List<string> ids)
         {
             var idsobj = ids.ConvertAll(x => new ObjectId(x));
             var res = _usersRepository.FilterBy(x => idsobj.Contains(x.Id));
-            return res.Select(x => new UserInfo() { UserID = x.Id.ToString(), FirstName = x.FirstName, LastName = x.LastName, Login = x.Login, BirthDate = x.BirthDate}).ToList();
+            return res.Select(x => new UserInfo(x.Id.ToString(), x.Login, x.FirstName, x.LastName, x.BirthDate)).ToList();
         }
 
         private bool VerifyUserPassword(User user, string inputPassword)

@@ -9,9 +9,27 @@ namespace PayloadObjects.ToClient
 {
     public class UserInfo
     {
+        public UserInfo(string userId, string login, string firstName, string lastName, DateTime birthDate)
+        {
+            UserId = userId;
+            Login = login;
+            FirstName = firstName;
+            LastName = lastName;
+            BirthDate = birthDate;
+        }
 
-        [JsonPropertyName("UserID")]
-        public string UserID { get; set; }
+        public UserInfo(string userId, string login, string firstName, string lastName, string assistantChatId, DateTime birthDate)
+        {
+            UserId = userId;
+            Login = login;
+            FirstName = firstName;
+            LastName = lastName;
+            AssistantChatId = assistantChatId;
+            BirthDate = birthDate;
+        }
+
+        [JsonPropertyName("UserId")]
+        public string UserId { get; set; }
 
         [JsonPropertyName("Login")]
         public string Login { get; set; }

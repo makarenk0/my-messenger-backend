@@ -23,6 +23,7 @@ namespace WebsocketAdapter
         private NetworkStream _stream;
         private ApplicationProcessor _applicationProcessor;
         private List<byte> _accumulator;
+        private bool _toClose = false;
 
         public WebsocketClientObject(TcpClient tcpClient)//Socket tcpClient)
         {
@@ -58,7 +59,7 @@ namespace WebsocketAdapter
                 EstablishWebsocketConnection();
 
                 List<byte> buf = new List<byte>(); 
-                while (!(client.Client.Poll(1000, SelectMode.SelectRead) && client.Available == 0))
+                while (!(client.Client.Poll(1000, SelectMode.SelectRead) && client.Available == 0) && !_toClose)
                 {
 
                     int bytes = 0;
@@ -232,8 +233,19 @@ namespace WebsocketAdapter
                     for (int i = 0; i < msglen; ++i)
                         decoded[i] = (byte)(bytes[offset + i] ^ masks[i % 4]);
 
-                    string text = Encoding.UTF8.GetString(decoded);
-                    Accumulate(decoded);
+                    
+
+                    if (decoded[0] == 3 && decoded[1] == 232)  // this is close code (1000)
+                    {
+                        Console.WriteLine(Encoding.UTF8.GetString(decoded.Skip(2).ToArray()));
+                        _toClose = true;
+                    }
+                    else
+                    {
+                        Accumulate(decoded);
+                    }
+                    
+                   
                     //Console.WriteLine("{0}", text);
                 }
                 else

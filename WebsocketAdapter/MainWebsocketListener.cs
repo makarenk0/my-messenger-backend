@@ -12,10 +12,10 @@ namespace WebsocketAdapter
 {
     public class MainWebsocketListener
     {
-        private readonly int _port;
+        //private readonly int _port;
         private readonly string _ipAddress;
-        private readonly TcpListener _listener;
-        private const int DEFAULT_PARALLEL_THREADS_NUM = 15;
+        //private readonly TcpListener _listener;
+        //private const int DEFAULT_PARALLEL_THREADS_NUM = 15;
 
         public MainWebsocketListener(int port, string ipAddress)
         {
@@ -37,10 +37,10 @@ namespace WebsocketAdapter
             var server = new WebSocketServer("ws://192.168.1.19");
             server.Start(socket =>
             {
+                Console.WriteLine("New user");
                 WebsocketClientObject clientObject = new WebsocketClientObject(socket);
                 ThreadPool.QueueUserWorkItem(clientObject.Process);
-                
-                //socket.OnOpen = () => Console.WriteLine("Open!");
+                //socket.OnOpen = () => { Console.WriteLine(ThreadPool.QueueUserWorkItem(.Process)); };
                 //socket.OnClose = () => Console.WriteLine("Close!");
                 //socket.OnMessage = message => socket.Send(message);
             });

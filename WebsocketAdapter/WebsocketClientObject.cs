@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WebsocketAdapter
@@ -22,9 +23,9 @@ namespace WebsocketAdapter
         private string _userId;
 
 
-        private NetworkStream _stream;
+       // private NetworkStream _stream;
         private ApplicationProcessor _applicationProcessor;
-        private List<byte> _accumulator;
+        //private List<byte> _accumulator;
         private bool _toClose = false;
 
 
@@ -32,12 +33,7 @@ namespace WebsocketAdapter
         {
             client = websocketClient;
             _applicationProcessor = new ApplicationProcessor(UserLoggedIn);
-
-            websocketClient.OnOpen = () => Console.WriteLine("Open!");
-            websocketClient.OnClose = () => Console.WriteLine("Close!");
-            websocketClient.OnMessage = message => DeconstructPacket(message.Select(x => (byte)x).ToList());
-           
-
+          
             //_accumulator = new List<byte>();
         }
 
@@ -64,7 +60,21 @@ namespace WebsocketAdapter
 
         public void Process(Object stateInfo)
         {
+            //client.OnOpen = () => Console.WriteLine("Open!");
+            client.OnClose = () => {
+                Console.WriteLine("CONNECTION CLOSED!");
+                _toClose = true; 
+            };
+            client.OnMessage = message => DeconstructPacket(message.Select(x => (byte)x).ToList());
 
+
+
+            
+
+            while (!_toClose)
+            {
+                Thread.Sleep(1000);
+            }
             //try
             //{
             //    _stream = client.GetStream();
@@ -91,7 +101,7 @@ namespace WebsocketAdapter
             //            }
             //        }
             //        while (_stream.DataAvailable);
-                    
+
             //    }
             //}
             //catch (IOException ex)
@@ -110,9 +120,9 @@ namespace WebsocketAdapter
             //}
 
             //client.Close();
-#if DEBUG
-            Console.WriteLine($"Connection closed, user id: {_userId}");
-#endif
+            //#if DEBUG
+            //            Console.WriteLine($"Connection closed, user id: {_userId}");
+            //#endif
         }
 
         //private void Accumulate(byte[] bytes)
@@ -141,7 +151,7 @@ namespace WebsocketAdapter
             List<byte> toSend = new List<byte>();
             toSend.Add((byte)response.Item1);
             toSend.AddRange(Encoding.ASCII.GetBytes(Convert.ToBase64String(Encoding.ASCII.GetBytes(response.Item2))));
-            toSend.Add(0x7E);
+            toSend.Add(_magicSequence);
             client.Send(toSend.ToArray());
         }
 
@@ -293,10 +303,9 @@ namespace WebsocketAdapter
             var updated = _applicationProcessor.UpdatePacketForChat(chatId);
             List<byte> toSend = new List<byte>();
             toSend.Add((byte)updated.Item1);
-            toSend.AddRange(Encoding.ASCII.GetBytes(updated.Item2));
-            toSend.Add(0x7E);
+            toSend.AddRange(Encoding.ASCII.GetBytes(Convert.ToBase64String(Encoding.ASCII.GetBytes(updated.Item2))));
+            toSend.Add(_magicSequence);
             client.Send(toSend.ToArray());
-            //ConstructPacketAndWrite(updated); //send update packet
         }
     }
 }

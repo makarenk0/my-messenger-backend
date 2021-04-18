@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fleck;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -18,42 +19,54 @@ namespace WebsocketAdapter
 
         public MainWebsocketListener(int port, string ipAddress)
         {
-            _port = port;
-            _ipAddress = ipAddress;
+            //_port = port;
+            //_ipAddress = ipAddress;
 
-            IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse(_ipAddress), _port);
-            _listener = new TcpListener(IPAddress.Parse(_ipAddress), _port);//new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            _listener.Start();
+            //IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse(_ipAddress), _port);
+            //_listener = new TcpListener(IPAddress.Parse(_ipAddress), _port);//new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            //_listener.Start();
 
-            //int minWorker, minIOC;
-            //ThreadPool.GetMinThreads(out minWorker, out minIOC);
-            //ThreadPool.SetMinThreads(DEFAULT_PARALLEL_THREADS_NUM, minIOC);
-            //Console.WriteLine(String.Concat("Resetting default thread pool volume from ", minWorker, " to ", DEFAULT_PARALLEL_THREADS_NUM));
+            ////int minWorker, minIOC;
+            ////ThreadPool.GetMinThreads(out minWorker, out minIOC);
+            ////ThreadPool.SetMinThreads(DEFAULT_PARALLEL_THREADS_NUM, minIOC);
+            ////Console.WriteLine(String.Concat("Resetting default thread pool volume from ", minWorker, " to ", DEFAULT_PARALLEL_THREADS_NUM));
 
-            Listen();
+            //Listen();
+
+
+            var server = new WebSocketServer("ws://192.168.1.19");
+            server.Start(socket =>
+            {
+                WebsocketClientObject clientObject = new WebsocketClientObject(socket);
+                ThreadPool.QueueUserWorkItem(clientObject.Process);
+                
+                //socket.OnOpen = () => Console.WriteLine("Open!");
+                //socket.OnClose = () => Console.WriteLine("Close!");
+                //socket.OnMessage = message => socket.Send(message);
+            });
         }
 
-        private void Listen()
-        {
-            try
-            {
-                int clientsAmount = 0;
-                while (true)
-                {
-                    Console.WriteLine("Waiting for web clients...");
-                    //Socket client = _listener.Accept();
-                    TcpClient client = _listener.AcceptTcpClient();
-                    WebsocketClientObject clientObject = new WebsocketClientObject(client);
+        //private void Listen()
+        //{
+        //    try
+        //    {
+        //        int clientsAmount = 0;
+        //        while (true)
+        //        {
+        //            Console.WriteLine("Waiting for web clients...");
+        //            //Socket client = _listener.Accept();
+        //            TcpClient client = _listener.AcceptTcpClient();
+        //            WebsocketClientObject clientObject = new WebsocketClientObject(client);
 
-                    ThreadPool.QueueUserWorkItem(clientObject.Process);
+        //            ThreadPool.QueueUserWorkItem(clientObject.Process);
 
-                    ++clientsAmount;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
+        //            ++clientsAmount;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex.Message);
+        //    }
+        //}
     }
 }

@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DatabaseModule\DatabaseModule.csproj" />
-    <ProjectReference Include="..\PayloadObjects\PayloadObjects.csproj" />
+    <ProjectReference Include="..\DTOs\DTOs.csproj" />
     <ProjectReference Include="..\VirtualAssistant\VirtualAssistant.csproj" />
   </ItemGroup>
 

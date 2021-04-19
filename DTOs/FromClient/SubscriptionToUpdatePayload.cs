@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace PayloadObjects.FromClient
+namespace DTOs.FromClient
 {
     public class SubscriptionToUpdatePayload : SessionTokenPayload
     {

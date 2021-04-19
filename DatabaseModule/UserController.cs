@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using PayloadObjects.ToClient;
-using PayloadObjects.FromClient;
+using DTOs.ToClient;
+using DTOs.FromClient;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

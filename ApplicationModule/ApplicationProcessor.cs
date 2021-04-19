@@ -1,6 +1,6 @@
 ﻿
-using PayloadObjects.ToClient;
-using PayloadObjects.FromClient;
+using DTOs.ToClient;
+using DTOs.FromClient;
 using MongoDB.Bson;
 using MyMessengerBackend.DatabaseModule;
 using System;

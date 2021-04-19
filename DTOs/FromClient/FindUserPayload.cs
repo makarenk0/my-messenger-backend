@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace PayloadObjects.FromClient
+namespace DTOs.FromClient
 {
     public class FindUserPayload : SessionTokenPayload
     {

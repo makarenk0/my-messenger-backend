@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ApplicationModule\ApplicationModule.csproj" />
+    <ProjectReference Include="..\ApplicationModule\ServiceModule.csproj" />
     <ProjectReference Include="..\MyMessengerProtocol\MyMessengerProtocol.csproj" />
     <ProjectReference Include="..\NetworkModule\NetworkModule.csproj" />
   </ItemGroup>

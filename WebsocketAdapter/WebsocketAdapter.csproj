@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ApplicationModule\ApplicationModule.csproj" />
+    <ProjectReference Include="..\ServiceModule\ServiceModule.csproj" />
   </ItemGroup>
 
 </Project>

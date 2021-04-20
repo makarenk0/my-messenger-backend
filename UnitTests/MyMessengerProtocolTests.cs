@@ -37,7 +37,7 @@ namespace UnitTests
             //Passing to project
             var packetToPreoject = new Packet('0', Convert.ToBase64String(Encoding.ASCII.GetBytes(String.Concat("{", String.Format("\"Public_key\": \"{0}\"", myPublicKeyBase64), "}"))));
 
-            ApplicationProcessor.UserLoggedIn stubMethod = StubMethod;
+            ServiceProcessor.UserLoggedIn stubMethod = StubMethod;
             PacketProcessor packetProcessor = new PacketProcessor(stubMethod);
             Packet response = packetProcessor.Process(packetToPreoject);
 

@@ -21,14 +21,14 @@ namespace WebsocketAdapter
 
 
         private NetworkStream _stream;
-        private ApplicationProcessor _applicationProcessor;
+        private ServiceProcessor _applicationProcessor;
         private List<byte> _accumulator;
         private bool _toClose = false;
 
         public WebsocketClientObject(TcpClient tcpClient)//Socket tcpClient)
         {
             client = tcpClient;
-            _applicationProcessor = new ApplicationProcessor(UserLoggedIn);
+            _applicationProcessor = new ServiceProcessor(UserLoggedIn);
             _accumulator = new List<byte>();
         }
 
@@ -54,7 +54,7 @@ namespace WebsocketAdapter
                 byte[] data = new byte[64]; // buffer
 
                 //Need this to know when to pass delegate for updating
-                ApplicationProcessor.UserLoggedIn userLoggedInAction = UserLoggedIn;
+                ServiceProcessor.UserLoggedIn userLoggedInAction = UserLoggedIn;
 
                 EstablishWebsocketConnection();
 
@@ -89,7 +89,7 @@ namespace WebsocketAdapter
             // Removing updating delegate from active users table 
             if (!String.IsNullOrEmpty(_userId))
             {
-                ApplicationProcessor._activeUsersTable.TryRemove(_userId, out _);
+                ServiceProcessor._activeUsersTable.TryRemove(_userId, out _);
             }
 
             client.Close();
@@ -260,7 +260,7 @@ namespace WebsocketAdapter
             Console.WriteLine($"User with id {userId} logged in");
 #endif
             _userId = userId;
-            ApplicationProcessor._activeUsersTable.TryAdd(_userId, SendUpdate);
+            ServiceProcessor._activeUsersTable.TryAdd(_userId, SendUpdate);
         }
 
         private void SendUpdate(string chatId)

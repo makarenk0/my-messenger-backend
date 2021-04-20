@@ -12,13 +12,13 @@ namespace MyMessengerBackend.MyMessengerProtocol
     public class PacketProcessor
     {
         private AesBase64Wrapper _encryptionModule;
-        private ApplicationProcessor _applicationProcessor;
+        private ServiceProcessor _applicationProcessor;
 
-        private ApplicationProcessor.UserLoggedIn _action;
+        private ServiceProcessor.UserLoggedIn _action;
 
         public AesBase64Wrapper EncryptionModule { get => _encryptionModule; set => _encryptionModule = value; }
 
-        public PacketProcessor(ApplicationProcessor.UserLoggedIn action)
+        public PacketProcessor(ServiceProcessor.UserLoggedIn action)
         {
             _encryptionModule = new AesBase64Wrapper(Int32.Parse(ConfigurationManager.AppSettings["KEY_DERIVATION_ITERATIONS_NUMBER"]),
                 Int32.Parse(ConfigurationManager.AppSettings["AES_KEY_LENGTH"]));
@@ -30,7 +30,7 @@ namespace MyMessengerBackend.MyMessengerProtocol
             if (packet.PacketType == '0')
             {
                 Packet establishPacket = InitDiffieHellman(packet);
-                _applicationProcessor = new ApplicationProcessor(_action);
+                _applicationProcessor = new ServiceProcessor(_action);
                 return establishPacket;
             }
             return ProcessEncryptedPacket(packet);

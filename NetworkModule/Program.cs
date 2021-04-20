@@ -15,7 +15,7 @@ namespace MyMessengerBackend.NetworkModule
 
         public static void Main(string[] args)
         {
-            ApplicationProcessor._activeUsersTable = new ConcurrentDictionary<string, ApplicationProcessor.UpdateAction>();
+            ServiceProcessor._activeUsersTable = new ConcurrentDictionary<string, ServiceProcessor.UpdateAction>();
             new Thread(() =>{ new MainListener(MOBILE_CLIENT_PORT, IP_ADDRESS); }).Start();   //mobile clients
             new Thread(() => { new MainWebsocketListener(WEB_CLIENT_PORT, IP_ADDRESS); }).Start();  //web clients
         }

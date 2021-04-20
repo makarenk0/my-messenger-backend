@@ -14,7 +14,7 @@ namespace MyMessengerBackend.MyMessengerProtocol
 
         private byte[] _response;
 
-        public Recognizer(ApplicationProcessor.UserLoggedIn action)
+        public Recognizer(ServiceProcessor.UserLoggedIn action)
         {
             _pktProcessor = new PacketProcessor(action);
             _applicationPacket = new List<byte>();

@@ -15,7 +15,7 @@ using ApplicationModule;
 
 namespace MyMessengerBackend.ApplicationModule
 {
-    public class ApplicationProcessor
+    public class ServiceProcessor
     {
 
         private const int MAXIMUM_USERS_SEARCH_NUMBER = 10;
@@ -43,7 +43,7 @@ namespace MyMessengerBackend.ApplicationModule
 
 
 
-        public ApplicationProcessor(UserLoggedIn action)
+        public ServiceProcessor(UserLoggedIn action)
         {
             _dbSettings = new MongoDbSettings();
             _dbSettings.ConnectionString = ConfigurationManager.AppSettings["db_connection"];

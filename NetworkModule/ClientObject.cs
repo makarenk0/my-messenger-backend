@@ -37,7 +37,7 @@ namespace MyMessengerBackend.NetworkModule
                 byte[] data = new byte[64]; // buffer
 
                 //Need this to know when to pass delegate for updating
-                ApplicationProcessor.UserLoggedIn userLoggedInAction = UserLoggedIn;
+                ServiceProcessor.UserLoggedIn userLoggedInAction = UserLoggedIn;
                 clientRecognizer = new Recognizer(userLoggedInAction);
 
                 while (!(client.Client.Poll(1000, SelectMode.SelectRead) && client.Available == 0))
@@ -73,7 +73,7 @@ namespace MyMessengerBackend.NetworkModule
             // Removing updating delegate from active users table 
             if (!String.IsNullOrEmpty(_userId))
             {
-                ApplicationProcessor._activeUsersTable.TryRemove(_userId, out _);
+                ServiceProcessor._activeUsersTable.TryRemove(_userId, out _);
             }
 
             client.Close();
@@ -88,7 +88,7 @@ namespace MyMessengerBackend.NetworkModule
             Console.WriteLine($"User with id {userId} logged in");
 #endif
             _userId = userId;
-            bool added = ApplicationProcessor._activeUsersTable.TryAdd(_userId, SendUpdate);
+            bool added = ServiceProcessor._activeUsersTable.TryAdd(_userId, SendUpdate);
             if (!added)
             {
                 Console.WriteLine("USER WAS ALREADY LOGGED IN!!!");

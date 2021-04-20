@@ -14,7 +14,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyMessengerProtocol", "MyMe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseModule", "DatabaseModule\DatabaseModule.csproj", "{5867B68C-BB33-4F17-A3D7-0E4245C98460}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationModule", "ApplicationModule\ApplicationModule.csproj", "{623049C0-5C3C-4C58-8F64-23BC2DF78EC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceModule", "ServiceModule\ServiceModule.csproj", "{623049C0-5C3C-4C58-8F64-23BC2DF78EC2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DTOs", "DTOs\DTOs.csproj", "{BB2BD59F-A624-4063-9DB6-477DD4F6E6AA}"
 EndProject

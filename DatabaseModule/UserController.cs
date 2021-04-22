@@ -164,8 +164,15 @@ namespace MyMessengerBackend.DatabaseModule
 
         public List<UserInfo> GetUsersByIds(List<string> ids)
         {
-            var idsobj = ids.ConvertAll(x => new ObjectId(x));
-            var res = _usersRepository.FilterBy(x => idsobj.Contains(x.Id));
+            List<ObjectId> idsObj = new List<ObjectId>();
+            foreach(var id in ids)
+            {
+                if (ObjectId.TryParse(id, out _))
+                {
+                    idsObj.Add(new ObjectId(id));
+                } 
+            }
+            var res = _usersRepository.FilterBy(x => idsObj.Contains(x.Id));
             return res.Select(x => new UserInfo(x.Id.ToString(), x.Login, x.FirstName, x.LastName, x.BirthDate)).ToList();
         }
 

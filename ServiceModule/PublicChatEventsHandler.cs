@@ -68,9 +68,10 @@ namespace ServiceModule
                     {
                         Id = ObjectId.GenerateNewId(),
                         Sender = "System",
-                        Body = $"Member {res.Item2} was excluded\n" +
+                        Body = $"Member {res.Item2} was kicked\n" +
                         $"by {_userController.User.FirstName} {_userController.User.LastName}"
                     });
+                sendedToUsers.Add(excludeEvent.UserId); //triggering user last time before kick
                 return (true, sendedToUsers);
             }
 

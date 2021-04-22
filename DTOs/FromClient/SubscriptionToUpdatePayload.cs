@@ -9,7 +9,7 @@ namespace DTOs.FromClient
         public char SubscriptionPacketNumber { get; set; }
 
 
-        [JsonPropertyName("LastChatsMessages")]
-        public List<LastChatMessage> LastChatsMessages { get; set; }
+        [JsonPropertyName("LastChatsData")]
+        public List<LastChatData> LastChatsMessages { get; set; }
     }
 }

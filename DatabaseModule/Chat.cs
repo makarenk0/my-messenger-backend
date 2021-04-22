@@ -12,6 +12,8 @@ namespace MyMessengerBackend.DatabaseModule
 
         public bool IsGroup { get; set; }
 
+        public String Admin { get; set; }
+
         public List<String> Members { get; set; }
 
         public List<Message> Messages { get; set; }

@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Runtime.InteropServices;
 using System.Configuration;
 using MyMessengerBackend.DatabaseModule;
-using MyMessengerBackend.ApplicationModule;
+using MyMessengerBackend.ServiceModule;
 
 namespace MyMessengerBackend.MyMessengerProtocol
 {

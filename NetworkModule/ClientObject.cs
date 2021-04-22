@@ -5,7 +5,7 @@ using System.Text;
 using System.Linq;
 using MyMessengerBackend.MyMessengerProtocol;
 using System.Threading.Tasks;
-using MyMessengerBackend.ApplicationModule;
+using MyMessengerBackend.ServiceModule;
 using System.Text.RegularExpressions;
 using System.IO;
 

@@ -12,8 +12,9 @@ using System.Text.Json;
 using System.Linq;
 using VirtualAssistant;
 using ApplicationModule;
+using ServiceModule;
 
-namespace MyMessengerBackend.ApplicationModule
+namespace MyMessengerBackend.ServiceModule
 {
     public class ServiceProcessor
     {
@@ -36,11 +37,13 @@ namespace MyMessengerBackend.ApplicationModule
 
         private VirtualAssistantEntryPoint _virtualAssistant;
 
-        private Dictionary<string, string> _lastChatsMessages;
+        private Dictionary<string, LastChatData> _lastChatsData;
 
         private delegate string InputProcess(object request);
         private Dictionary<char, InputProcess> handlers;
+       
 
+        private PublicChatEventsHandler _publicChatEventsHandler;
 
 
         public ServiceProcessor(UserLoggedIn action)
@@ -50,15 +53,17 @@ namespace MyMessengerBackend.ApplicationModule
             _dbSettings.DatabaseName = ConfigurationManager.AppSettings["db_name"];
             _userController = new UserController(new MongoRepository<User>(_dbSettings), new MongoRepository<Chat>(_dbSettings));
             _userLoggedAction = action;
-            _lastChatsMessages = new Dictionary<string, string>();
+            _lastChatsData = new Dictionary<string, LastChatData>();
 
             _virtualAssistant = new VirtualAssistantEntryPoint(ConfigurationManager.AppSettings["assistant_file"]);
 
-            RegisterHandlers();
+            _publicChatEventsHandler = new PublicChatEventsHandler(_userController);
+
+            RegisterAppHandlers();
             
         }
 
-        private void RegisterHandlers()
+        private void RegisterAppHandlers()
         {
             handlers = new Dictionary<char, InputProcess>();
             handlers.TryAdd('1', Registration);
@@ -69,7 +74,10 @@ namespace MyMessengerBackend.ApplicationModule
             handlers.TryAdd('7', SubscribeOnUpdates);
             handlers.TryAdd('8', InitPublicChat);
             handlers.TryAdd('a', AssistantRequest);
+            handlers.TryAdd('p', PublicChatEventHandle);
         }
+
+       
 
         public (char, string) Process(char packetType, string payload)
         {
@@ -163,8 +171,16 @@ namespace MyMessengerBackend.ApplicationModule
                 return JsonSerializer.Serialize(verifyResult.Item2);
             }
 
-            Message newInitMessage = new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = init.Body };
-            Chat toAdd = new Chat() { Members = init.UserIds, Messages = new List<Message>() { newInitMessage }, IsGroup = false };
+            Message newInitMessage = new Message() { 
+                Id = ObjectId.GenerateNewId(), 
+                Sender = _userController.User.Id.ToString(), 
+                Body = init.Body 
+            };
+            Chat toAdd = new Chat() { 
+                Members = init.UserIds, 
+                Messages = new List<Message>() { newInitMessage }, 
+                IsGroup = false 
+            };
             string newChatId = _userController.AddChat(toAdd);
 
 
@@ -209,7 +225,12 @@ namespace MyMessengerBackend.ApplicationModule
                 Sender = "System",
                 Body = String.Concat(_userController.User.FirstName, " ", _userController.User.LastName, " created a group")
             };
-            Chat toAddGroup = new Chat() { Members = initGroupChat.UserIds, ChatName = initGroupChat.ChatName, Messages = new List<Message>() { newGroupInitMessage }, IsGroup = true };
+            Chat toAddGroup = new Chat() { 
+                Members = initGroupChat.UserIds, 
+                ChatName = initGroupChat.ChatName, 
+                Messages = new List<Message>() { newGroupInitMessage }, 
+                Admin = _userController.User.Id.ToString(),
+                IsGroup = true };
             string newGroupChatId = _userController.AddChat(toAddGroup);
 
             TriggerUsers(newGroupChatId, toAddGroup.Members);
@@ -235,6 +256,20 @@ namespace MyMessengerBackend.ApplicationModule
         }
 
 
+        private string PublicChatEventHandle(object request)
+        {
+            PublicChatEventPayload pChatEvent = (PublicChatEventPayload)request;
+
+            var result = _publicChatEventsHandler.ProcessPublicChatEvents(pChatEvent);
+            if (result.Item1)
+            {
+                TriggerUsers(pChatEvent.ChatId, result.Item2);
+                return JsonSerializer.Serialize(new StatusResponsePayload("success", "Public event was executed"));
+            }
+            return JsonSerializer.Serialize(new StatusResponsePayload("error", "Can't proccess public event"));
+        }
+
+
         private void TriggerUsers(string chatId, List<string> users)
         {
             foreach(var user in users)
@@ -250,7 +285,7 @@ namespace MyMessengerBackend.ApplicationModule
         private ZeroUpdatePayload GetZeroUpdate()
         {
             ZeroUpdatePayload res = new ZeroUpdatePayload("success", "Subscribed for update") { AllChats = new List<UpdateChatPayload>()};
-            foreach (var m in _lastChatsMessages.Keys)
+            foreach (var m in _lastChatsData.Keys)
             {
                 var update = GetOneChatUpdated(m);
                 if(update.NewMessages.Count > 0)
@@ -266,9 +301,9 @@ namespace MyMessengerBackend.ApplicationModule
         {
 
             // if someone init new chat with you
-            if (!_lastChatsMessages.ContainsKey(chatId))
+            if (!_lastChatsData.ContainsKey(chatId))
             {
-                _lastChatsMessages.Add(chatId, null);
+                _lastChatsData.Add(chatId, null);
             }
 
             return (_subscriptionUpdatePacketNumber, JsonSerializer.Serialize(GetOneChatUpdated(chatId)));
@@ -278,11 +313,11 @@ namespace MyMessengerBackend.ApplicationModule
         private UpdateChatPayload GetOneChatUpdated(string chatId)
         {
             List<Message> newMessages;
-            if (String.IsNullOrEmpty(_lastChatsMessages[chatId])) //get whole chat messages
+            if (_lastChatsData[chatId] == null) //get whole chat messages
             {
                 var wholeChat = _userController.GetWholeChat(chatId);
                 newMessages = wholeChat.Messages;
-                _lastChatsMessages[chatId] = newMessages.Count > 0 ? newMessages[newMessages.Count - 1].Id.ToString() : null;  //update last messages table, if chat is empty leave null
+                _lastChatsData[chatId] = new LastChatData(wholeChat.Id.ToString(), wholeChat.Members, wholeChat.Admin, newMessages[newMessages.Count - 1].Id.ToString());//newMessages.Count > 0 ? newMessages[newMessages.Count - 1].Id.ToString() : null;  //update last messages table, if chat is empty leave null
 
                 string chatName = "";
                 if (wholeChat.ChatName == null)
@@ -295,33 +330,41 @@ namespace MyMessengerBackend.ApplicationModule
                     chatName = wholeChat.ChatName;
                 }
                 var newMessagesPayload = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body));
-                return new UpdateChatPayload(chatId, true, wholeChat.IsGroup, chatName, wholeChat.Members, newMessagesPayload);
+                return new UpdateChatPayload(chatId, true, wholeChat.IsGroup, chatName, wholeChat.Members, wholeChat.Admin, newMessagesPayload);
             }
-            else //get only new chat messages
+            else //get only new data (user already have local data)
             {
-                var newMessagesChat = _userController.GetMessagesAfter(chatId, _lastChatsMessages[chatId]);
-                newMessages = newMessagesChat;
-                _lastChatsMessages[chatId] = newMessages.Count > 0 ? newMessages[newMessages.Count - 1].Id.ToString() : _lastChatsMessages[chatId];  //update last messages table, if no new messages - leave as it was
+                var (updateChatData, newMessagesData) = _userController.GetUpdatedData(chatId, _lastChatsData[chatId].LastMessageId, _lastChatsData[chatId].Admin, _lastChatsData[chatId].Members);
+                newMessages = newMessagesData;
+
+
+
+                _lastChatsData[chatId].LastMessageId = updateChatData.LastMessageId;
+                _lastChatsData[chatId].Members = updateChatData.Members == null ? _lastChatsData[chatId].Members : updateChatData.Members;
+                _lastChatsData[chatId].Admin = updateChatData.Admin == null ? _lastChatsData[chatId].Admin : updateChatData.Admin;
+
+
+
                 var newMessagesPayload = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body));
-                return new UpdateChatPayload(chatId, false, null, newMessagesPayload);  //retrieve members from database in case of new members added
+                return new UpdateChatPayload(chatId, false, updateChatData.Members, updateChatData.Admin, newMessagesPayload);  //retrieve members from database in case of new members added
             }
             
         }
 
 
-        private void FormLastMessagesTable(List<LastChatMessage> lastChatsMessages)
+        private void FormLastMessagesTable(List<LastChatData> lastChatsMessages)
         {
             // meassages and chats stored on device user
             foreach(var m in lastChatsMessages)
             {
-                _lastChatsMessages.TryAdd(m.ChatId, m.LastMessageId);
+                _lastChatsData.TryAdd(m.ChatId, m);
             }
             
             //if someone inits chat with user while user is offline
             var allChats = _userController.GetAllConnectedChats();
             foreach(var ch in allChats)
             {
-                _lastChatsMessages.TryAdd(ch, null);
+                _lastChatsData.TryAdd(ch, null);
             }
 
         }

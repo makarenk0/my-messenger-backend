@@ -1,21 +1,23 @@
-﻿using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
+﻿
+using MyMessengerBackend.ServiceModule;
+using System.Collections.Concurrent;
 using System.Threading;
+using WebsocketAdapter;
 
 namespace MyMessengerBackend.NetworkModule
 {
-    class Program
+    public class Program
     {
-        private const int PORT = 20; // receving port
+        private const int MOBILE_CLIENT_PORT = 20; // receving port for mobile clients (raw tcp)
+        private const int WEB_CLIENT_PORT = 80; // receving port for web clients through websockets
+        //private const string IP_ADDRESS = "192.168.1.19";
+        private const string IP_ADDRESS = "10.156.0.2";  // private ip (google cloud machine)
 
-        private const string IP_ADDRESS = "192.168.1.19";
-        // private const string IP_ADDRESS = "10.156.0.2";  // private ip (google cloud machine)
-
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            new MainListener(PORT, IP_ADDRESS);
+            ServiceProcessor._activeUsersTable = new ConcurrentDictionary<string, ServiceProcessor.UpdateAction>();
+            new Thread(() =>{ new MainListener(MOBILE_CLIENT_PORT, IP_ADDRESS); }).Start();   //mobile clients
+            new Thread(() => { new MainWebsocketListener(WEB_CLIENT_PORT, IP_ADDRESS); }).Start();  //web clients
         }
     }
 }

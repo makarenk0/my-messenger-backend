@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MyMessengerProtocol\MyMessengerProtocol.csproj" />
+    <ProjectReference Include="..\WebsocketAdapter\WebsocketAdapter.csproj" />
   </ItemGroup>
 
 </Project>

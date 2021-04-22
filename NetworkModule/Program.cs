@@ -1,5 +1,5 @@
 ﻿
-using MyMessengerBackend.ApplicationModule;
+using MyMessengerBackend.ServiceModule;
 using System.Collections.Concurrent;
 using System.Threading;
 using WebsocketAdapter;

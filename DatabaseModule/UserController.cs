@@ -107,19 +107,32 @@ namespace MyMessengerBackend.DatabaseModule
             return usersOfChat;
         }
 
-        public List<Message> GetMessagesAfter(string chatId, string lastMessageId)
+        public (LastChatData, List<Message>) GetUpdatedData(string chatId, string lastMessageId, string lastAdminId, List<string> lastMembersIds)
         {
-            var pipeline = _chatsRepository.Collection.Aggregate().Match(x => x.Id == new ObjectId(chatId)).Project(i => new {x = i.Messages.Where(x => x.Id > new ObjectId(lastMessageId))});
-            //var pipeline = _chatsRepository.Collection.Aggregate().Match(x => x.Id == new ObjectId(chatId)).Project(i => new Chat{ChatName=i.ChatName, Members=i.Members, Messages = i.Messages.Where(x => x.Id > new ObjectId(lastMessageId)).ToList()}); //TO DO: debug
-            
-        
+            var lastMessages = GetLastMessages(chatId, lastMessageId);
+            LastChatData chatUpdatedData = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => new LastChatData(chatId, x.Members, x.Admin, lastMessageId)).FirstOrDefault();
+
+            chatUpdatedData.Members = chatUpdatedData.Members.SequenceEqual(lastMembersIds) ? null : chatUpdatedData.Members;
+            chatUpdatedData.Admin = chatUpdatedData.Admin == lastAdminId ? null : chatUpdatedData.Admin;
+            chatUpdatedData.LastMessageId = lastMessages.Count == 0 ? lastMessageId : lastMessages.Last().Id.ToString();
+
+            return (chatUpdatedData, lastMessages);
+        }
+
+        private List<Message> GetLastMessages(string chatId, string lastMessageId)
+        {
+            var pipeline = _chatsRepository.Collection.Aggregate()
+                .Match(x => x.Id == new ObjectId(chatId)).Project(i => new { x = i.Messages.Where(x => x.Id > new ObjectId(lastMessageId)) });
             var res = pipeline.SingleOrDefault();
-            if(res != null)
+            if (res != null)
             {
                 return res.x.ToList();
             }
             return new List<Message>();
         }
+
+
+
 
         public Chat GetWholeChat(string chatId)
         {
@@ -155,6 +168,56 @@ namespace MyMessengerBackend.DatabaseModule
             var res = _usersRepository.FilterBy(x => idsobj.Contains(x.Id));
             return res.Select(x => new UserInfo(x.Id.ToString(), x.Login, x.FirstName, x.LastName, x.BirthDate)).ToList();
         }
+
+
+        public bool LeavePublicChat(string chatId)
+        {
+            var members = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Members).FirstOrDefault().Where(x => x != _currentUser.Id.ToString()).ToArray();
+            _chatsRepository.UpdateOne<IEnumerable<string>>(chatId, "Members", members);
+            return true;
+        }
+
+        public (bool, string) ExcludeMemberFromPublicChat(string chatId, string memberId)
+        {
+            Chat adminIdAndMembers = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => new Chat() {Admin = x.Admin, Members = x.Members }).FirstOrDefault();
+            if(_currentUser.Id.ToString() == adminIdAndMembers.Admin)
+            {
+                var updatedMembers = adminIdAndMembers.Members.Where(x => x != memberId);
+                _chatsRepository.UpdateOne(chatId, "Members", updatedMembers);
+                var member = GetUserById(memberId);
+                return (true, $"{member.FirstName} { member.LastName}");
+            }
+            return (false, null);
+        }
+
+        public (bool, string) AddMemberToPublicChat(string chatId, string newMemberId)
+        {
+            Chat adminIdAndMembers = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => new Chat() { Admin = x.Admin, Members = x.Members }).FirstOrDefault();
+            if (_currentUser.Id.ToString() == adminIdAndMembers.Admin)
+            {
+                var updatedMembers = adminIdAndMembers.Members;
+                updatedMembers.Add(newMemberId);
+                _chatsRepository.UpdateOne(chatId, "Members", updatedMembers);
+                var newMember = GetUserById(newMemberId);
+                return (true, $"{newMember.FirstName} { newMember.LastName}");
+            }
+            return (false, null);
+        }
+
+        public (bool, string) TranferAdminRightsToUser(string chatId, string memberId)
+        {
+            Chat adminIdAndMembers = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => new Chat() { Admin = x.Admin, Members = x.Members }).FirstOrDefault();
+            if (_currentUser.Id.ToString() == adminIdAndMembers.Admin && adminIdAndMembers.Members.Contains(memberId))
+            {
+                _chatsRepository.UpdateOne(chatId, "Admin", memberId);
+                var newAdmin = GetUserById(memberId);
+                return (true, $"{newAdmin.FirstName} { newAdmin.LastName}");
+            }
+            return (false, null);
+        }
+
+
+
 
         private bool VerifyUserPassword(User user, string inputPassword)
         {

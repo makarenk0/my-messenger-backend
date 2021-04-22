@@ -19,6 +19,7 @@ namespace ApplicationModule
             { '7', typeof(SubscriptionToUpdatePayload) },
             { '8', typeof(InitChatPayload) },
             { 'a', typeof(SendChatMessagePayload) },
+            { 'p', typeof(PublicChatEventPayload) },
         };
     }
 }

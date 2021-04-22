@@ -59,5 +59,8 @@ namespace MyMessengerBackend.DatabaseModule
 
         Task UpdateOneArrayAsync(String id, String field, IDocument m);
 
+
+        void UpdateOne<IItem>(String id, String field, IItem m);
+
     }
 }

@@ -168,5 +168,13 @@ namespace MyMessengerBackend.DatabaseModule
             UpdateDefinition<TDocument> update = Builders<TDocument>.Update.Push(field, m);
             return Task.Run(() => Collection.FindOneAndUpdateAsync(filter, update));
         }
+
+
+        public void UpdateOne<IItem>(String id, String field, IItem m)
+        {
+            FilterDefinition<TDocument> filter = Builders<TDocument>.Filter.Where(x => x.Id == new ObjectId(id));
+            UpdateDefinition<TDocument> update = Builders<TDocument>.Update.Set(field, m);
+            Collection.UpdateOne(filter, update);
+        }
     }
 }

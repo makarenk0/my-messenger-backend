@@ -23,9 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ServiceModule\ServiceModule.csproj" />
     <ProjectReference Include="..\MyMessengerProtocol\MyMessengerProtocol.csproj" />
     <ProjectReference Include="..\NetworkModule\NetworkModule.csproj" />
-    <ProjectReference Include="..\ServiceModule\ServiceModule.csproj" />
   </ItemGroup>
 
 </Project>

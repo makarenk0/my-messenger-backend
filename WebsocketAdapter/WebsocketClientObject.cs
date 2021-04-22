@@ -199,7 +199,7 @@ namespace WebsocketAdapter
 
                 _stream.Write(response, 0, response.Length);
             }
-            else
+            else if(bytes.Count > 0)
             {
                 bool fin = (bytes[0] & 0b10000000) != 0,
                     mask = (bytes[1] & 0b10000000) != 0; // must be true, "All messages from the client to the server have this bit set"

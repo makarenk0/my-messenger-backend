@@ -343,7 +343,10 @@ namespace MyMessengerBackend.ServiceModule
                 _lastChatsData[chatId].Members = updateChatData.Members == null ? _lastChatsData[chatId].Members : updateChatData.Members;
                 _lastChatsData[chatId].Admin = updateChatData.Admin == null ? _lastChatsData[chatId].Admin : updateChatData.Admin;
 
-
+                if (!_lastChatsData[chatId].Members.Contains(_userController.User.Id.ToString()))  // this means we are kicked and this is the last packet
+                {
+                    _lastChatsData.Remove(chatId);
+                }
 
                 var newMessagesPayload = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body));
                 return new UpdateChatPayload(chatId, false, updateChatData.Members, updateChatData.Admin, newMessagesPayload);  //retrieve members from database in case of new members added

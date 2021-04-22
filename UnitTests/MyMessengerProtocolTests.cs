@@ -1,4 +1,4 @@
-﻿using MyMessengerBackend.ApplicationModule;
+﻿using MyMessengerBackend.ServiceModule;
 using MyMessengerBackend.MyMessengerProtocol;
 using System;
 using System.Collections.Generic;

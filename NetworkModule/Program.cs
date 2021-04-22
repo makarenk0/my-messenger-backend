@@ -10,8 +10,8 @@ namespace MyMessengerBackend.NetworkModule
     {
         private const int MOBILE_CLIENT_PORT = 20; // receving port for mobile clients (raw tcp)
         private const int WEB_CLIENT_PORT = 80; // receving port for web clients through websockets
-        private const string IP_ADDRESS = "192.168.1.19";
-        // private const string IP_ADDRESS = "10.156.0.2";  // private ip (google cloud machine)
+        //private const string IP_ADDRESS = "192.168.1.19";
+        private const string IP_ADDRESS = "10.156.0.2";  // private ip (google cloud machine)
 
         public static void Main(string[] args)
         {

@@ -1,5 +1,6 @@
 {
 	"Statements": {
+		">v (tell|show) * (some) * (new|news)": "/popular_news",
 		">s (what's|what) >a * (new|news)": "/popular_news",
 		"* (any|some) * (new|news)": "/popular_news",
 		">s (how) * (about) * (new|news)": "/popular_news",

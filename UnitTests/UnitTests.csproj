@@ -28,4 +28,8 @@
     <ProjectReference Include="..\ServiceModule\ServiceModule.csproj" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy ..\VirtualAssistant\AssistantData bin\Debug\net5.0\AssistantData /s /e /y" />
+  </Target>
+
 </Project>

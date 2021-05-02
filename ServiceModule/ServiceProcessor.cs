@@ -13,6 +13,7 @@ using System.Linq;
 using VirtualAssistant;
 using ApplicationModule;
 using ServiceModule;
+using DatabaseModule;
 
 namespace MyMessengerBackend.ServiceModule
 {
@@ -48,10 +49,7 @@ namespace MyMessengerBackend.ServiceModule
 
         public ServiceProcessor(UserLoggedIn action)
         {
-            _dbSettings = new MongoDbSettings();
-            _dbSettings.ConnectionString = ConfigurationManager.AppSettings["db_connection"];
-            _dbSettings.DatabaseName = ConfigurationManager.AppSettings["db_name"];
-            _userController = new UserController(new MongoRepository<User>(_dbSettings), new MongoRepository<Chat>(_dbSettings));
+            _userController = new UserController(RepositoryService.UsersRepository, RepositoryService.ChatsRepository);
             _userLoggedAction = action;
             _lastChatsData = new Dictionary<string, LastChatData>();
 
@@ -355,7 +353,7 @@ namespace MyMessengerBackend.ServiceModule
         }
 
 
-        private void FormLastMessagesTable(List<LastChatData> lastChatsMessages)
+        private void FormLastMessagesTable(List<LastChatData> lastChatsMessages)  // may ne null
         {
             // meassages and chats stored on device user
             foreach(var m in lastChatsMessages)

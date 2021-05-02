@@ -11,8 +11,6 @@ namespace MyMessengerBackend.DatabaseModule
     {
         IQueryable<TDocument> AsQueryable();
 
-        IMongoCollection<TDocument> Collection { get; }
-
         IEnumerable<TDocument> FilterBy(
             Expression<Func<TDocument, bool>> filterExpression);
 
@@ -58,7 +56,6 @@ namespace MyMessengerBackend.DatabaseModule
         void UpdateOneArray(String id, String field, IDocument m);
 
         Task UpdateOneArrayAsync(String id, String field, IDocument m);
-
 
         void UpdateOne<IItem>(String id, String field, IItem m);
 

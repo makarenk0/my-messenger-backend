@@ -14,8 +14,6 @@ namespace MyMessengerBackend.DatabaseModule
     {
         private readonly IMongoCollection<TDocument> _collection;
 
-        public IMongoCollection<TDocument> Collection => _collection;
-
         public MongoRepository(MongoDbSettings settings)
         {
             var database = new MongoClient(settings.ConnectionString).GetDatabase(settings.DatabaseName);
@@ -32,43 +30,43 @@ namespace MyMessengerBackend.DatabaseModule
 
         public virtual IQueryable<TDocument> AsQueryable()
         {
-            return Collection.AsQueryable();
+            return _collection.AsQueryable();
         }
 
         public virtual IEnumerable<TDocument> FilterBy(
             Expression<Func<TDocument, bool>> filterExpression)
         {
-            return Collection.Find(filterExpression).ToEnumerable();
+            return _collection.Find(filterExpression).ToEnumerable();
         }
 
         public virtual IEnumerable<TDocument> FilterByLimited(
             Expression<Func<TDocument, bool>> filterExpression, int limit)
         {
-            return Collection.Find(filterExpression).Limit(limit).ToEnumerable();
+            return _collection.Find(filterExpression).Limit(limit).ToEnumerable();
         }
 
         public virtual IEnumerable<TProjected> FilterBy<TProjected>(
             Expression<Func<TDocument, bool>> filterExpression,
             Expression<Func<TDocument, TProjected>> projectionExpression)
         {
-            return Collection.Find(filterExpression).Project(projectionExpression).ToEnumerable();
+            return _collection.Find(filterExpression).Project(projectionExpression).ToEnumerable();
         }
 
         public virtual TDocument FindOne(Expression<Func<TDocument, bool>> filterExpression)
         {
-            return Collection.Find(filterExpression).FirstOrDefault();
+            return _collection.Find(filterExpression).FirstOrDefault();
         }
 
         public virtual Task<TDocument> FindOneAsync(Expression<Func<TDocument, bool>> filterExpression)
         {
-            return Task.Run(() => Collection.Find(filterExpression).FirstOrDefaultAsync());
+            return Task.Run(() => _collection.Find(filterExpression).FirstOrDefaultAsync());
         }
 
         public virtual TDocument FindById(string id)
         {
             var objectId = new ObjectId(id);
             var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, objectId);
-            return Collection.Find(filter).SingleOrDefault();
+            return _collection.Find(filter).SingleOrDefault();
         }
 
         public virtual Task<TDocument> FindByIdAsync(string id)
@@ -77,60 +75,60 @@ namespace MyMessengerBackend.DatabaseModule
             {
                 var objectId = new ObjectId(id);
                 var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, objectId);
-                return Collection.Find(filter).SingleOrDefaultAsync();
+                return _collection.Find(filter).SingleOrDefaultAsync();
             });
         }
 
 
         public virtual void InsertOne(TDocument document)
         {
-            Collection.InsertOne(document);
+            _collection.InsertOne(document);
         }
 
         public virtual Task InsertOneAsync(TDocument document)
         {
-            return Task.Run(() => Collection.InsertOneAsync(document));
+            return Task.Run(() => _collection.InsertOneAsync(document));
         }
 
         public void InsertMany(ICollection<TDocument> documents)
         {
-            Collection.InsertMany(documents);
+            _collection.InsertMany(documents);
         }
 
 
         public virtual async Task InsertManyAsync(ICollection<TDocument> documents)
         {
-            await Collection.InsertManyAsync(documents);
+            await _collection.InsertManyAsync(documents);
         }
 
 
         public void ReplaceOne(TDocument document)
         {
             var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, document.Id);
-            Collection.FindOneAndReplace(filter, document);
+            _collection.FindOneAndReplace(filter, document);
         }
 
         public virtual async Task ReplaceOneAsync(TDocument document)
         {
             var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, document.Id);
-            await Collection.FindOneAndReplaceAsync(filter, document);
+            await _collection.FindOneAndReplaceAsync(filter, document);
         }
 
         public void DeleteOne(Expression<Func<TDocument, bool>> filterExpression)
         {
-            Collection.FindOneAndDelete(filterExpression);
+            _collection.FindOneAndDelete(filterExpression);
         }
 
         public Task DeleteOneAsync(Expression<Func<TDocument, bool>> filterExpression)
         {
-            return Task.Run(() => Collection.FindOneAndDeleteAsync(filterExpression));
+            return Task.Run(() => _collection.FindOneAndDeleteAsync(filterExpression));
         }
 
         public void DeleteById(string id)
         {
             var objectId = new ObjectId(id);
             var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, objectId);
-            Collection.FindOneAndDelete(filter);
+            _collection.FindOneAndDelete(filter);
         }
 
         public Task DeleteByIdAsync(string id)
@@ -139,18 +137,18 @@ namespace MyMessengerBackend.DatabaseModule
             {
                 var objectId = new ObjectId(id);
                 var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, objectId);
-                Collection.FindOneAndDeleteAsync(filter);
+                _collection.FindOneAndDeleteAsync(filter);
             });
         }
 
         public void DeleteMany(Expression<Func<TDocument, bool>> filterExpression)
         {
-            Collection.DeleteMany(filterExpression);
+            _collection.DeleteMany(filterExpression);
         }
 
         public Task DeleteManyAsync(Expression<Func<TDocument, bool>> filterExpression)
         {
-            return Task.Run(() => Collection.DeleteManyAsync(filterExpression));
+            return Task.Run(() => _collection.DeleteManyAsync(filterExpression));
         }
 
 
@@ -159,14 +157,14 @@ namespace MyMessengerBackend.DatabaseModule
         {
             FilterDefinition<TDocument> filter = Builders<TDocument>.Filter.Where(x => x.Id == new ObjectId(id));
             UpdateDefinition<TDocument> update = Builders<TDocument>.Update.Push(field, m);
-            Collection.FindOneAndUpdate(filter, update);
+            _collection.FindOneAndUpdate(filter, update);
         }
 
         public Task UpdateOneArrayAsync(String id, String field, IDocument m)
         {
             FilterDefinition<TDocument> filter = Builders<TDocument>.Filter.Where(x => x.Id == new ObjectId(id));
             UpdateDefinition<TDocument> update = Builders<TDocument>.Update.Push(field, m);
-            return Task.Run(() => Collection.FindOneAndUpdateAsync(filter, update));
+            return Task.Run(() => _collection.FindOneAndUpdateAsync(filter, update));
         }
 
 
@@ -174,7 +172,7 @@ namespace MyMessengerBackend.DatabaseModule
         {
             FilterDefinition<TDocument> filter = Builders<TDocument>.Filter.Where(x => x.Id == new ObjectId(id));
             UpdateDefinition<TDocument> update = Builders<TDocument>.Update.Set(field, m);
-            Collection.UpdateOne(filter, update);
+            _collection.UpdateOne(filter, update);
         }
     }
 }

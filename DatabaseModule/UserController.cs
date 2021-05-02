@@ -8,16 +8,17 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using DatabaseModule;
 
 namespace MyMessengerBackend.DatabaseModule
 {
     public class UserController
     {
-        private readonly IMongoRepository<User> _usersRepository;
-        private readonly IMongoRepository<Chat> _chatsRepository;
-
-
+        
         private User _currentUser;
+
+        private IMongoRepository<User> _usersRep;
+        private IMongoRepository<Chat> _chatsRep;
 
         public User User
         {
@@ -27,16 +28,16 @@ namespace MyMessengerBackend.DatabaseModule
             }
         }
 
-        public UserController(IMongoRepository<User> usersRepository, IMongoRepository<Chat> chatsRepository)
+        public UserController(IMongoRepository<User> usersRep, IMongoRepository<Chat> chatsRep)
         {
-            _usersRepository = usersRepository;
-            _chatsRepository = chatsRepository;
+            _usersRep = usersRep;
+            _chatsRep = chatsRep;
         }
 
         public StatusResponsePayload Register(RegistrationPayload payload)
         {
 
-            User checkLogin = _usersRepository.FindOneAsync(x => x.Login == payload.Login).Result;
+            User checkLogin = _usersRep.FindOneAsync(x => x.Login == payload.Login).Result;
             if(checkLogin != null)
             {
                 return new StatusResponsePayload("error", "Login is already taken");
@@ -60,7 +61,7 @@ namespace MyMessengerBackend.DatabaseModule
                 PasswordHash = base64PasswordRepresentation, PasswordSalt = saltBase64Representation
             };
 
-            _usersRepository.InsertOneAsync(newUser);
+            _usersRep.InsertOneAsync(newUser);
 
 
             return new StatusResponsePayload("success", "Account successfully created!");
@@ -77,7 +78,7 @@ namespace MyMessengerBackend.DatabaseModule
 
         public LoginResponsePayload Login(LoginPayload payload)
         {
-            User user = _usersRepository.FindOneAsync(x => x.Login == payload.Login).Result;
+            User user = _usersRep.FindOneAsync(x => x.Login == payload.Login).Result;
             if(user == null)
             {
                 return new LoginResponsePayload("error", "Login does not exist!");
@@ -96,21 +97,22 @@ namespace MyMessengerBackend.DatabaseModule
         public String AddChat(Chat chat)
         {
             chat.Id = ObjectId.GenerateNewId();
-            _chatsRepository.InsertOne(chat);
+            _chatsRep.InsertOne(chat);
             return chat.Id.ToString();
         }
 
         public List<string> SendMessageToChat(string chatId, Message mes)
         {
-            List<string> usersOfChat = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Members).SingleOrDefault().ToList();
-            _chatsRepository.UpdateOneArray(chatId, "Messages", mes);
+            List<string> usersOfChat = _chatsRep.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Members).SingleOrDefault().ToList();
+            _chatsRep.UpdateOneArray(chatId, "Messages", mes);
             return usersOfChat;
         }
 
         public (LastChatData, List<Message>) GetUpdatedData(string chatId, string lastMessageId, string lastAdminId, List<string> lastMembersIds)
         {
             var lastMessages = GetLastMessages(chatId, lastMessageId);
-            LastChatData chatUpdatedData = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => new LastChatData(chatId, x.Members, x.Admin, lastMessageId)).FirstOrDefault();
+            LastChatData chatUpdatedData = _chatsRep.FilterBy(x => x.Id == new ObjectId(chatId), 
+                x => new LastChatData(chatId, x.Members, x.Admin, lastMessageId)).FirstOrDefault();
 
             chatUpdatedData.Members = chatUpdatedData.Members.SequenceEqual(lastMembersIds) ? null : chatUpdatedData.Members;
             chatUpdatedData.Admin = chatUpdatedData.Admin == lastAdminId ? null : chatUpdatedData.Admin;
@@ -121,9 +123,8 @@ namespace MyMessengerBackend.DatabaseModule
 
         private List<Message> GetLastMessages(string chatId, string lastMessageId)
         {
-            var pipeline = _chatsRepository.Collection.Aggregate()
-                .Match(x => x.Id == new ObjectId(chatId)).Project(i => new { x = i.Messages.Where(x => x.Id > new ObjectId(lastMessageId)) });
-            var res = pipeline.SingleOrDefault();
+            var res = _chatsRep.FilterBy(x => x.Id == new ObjectId(chatId), 
+                i => new { x = i.Messages.Where(x => x.Id > new ObjectId(lastMessageId)) }).SingleOrDefault();
             if (res != null)
             {
                 return res.x.ToList();
@@ -138,19 +139,19 @@ namespace MyMessengerBackend.DatabaseModule
         {
             //List<Message> allMessages = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Messages).SingleOrDefault().ToList();
 
-            Chat chat = _chatsRepository.FindById(chatId);
+            Chat chat = _chatsRep.FindById(chatId);
             return chat;
         }
 
         public List<string> GetAllConnectedChats()
         {
-            var res = _chatsRepository.FilterBy(x => x.Members.Contains(_currentUser.Id.ToString()), x => x.Id);
+            var res = _chatsRep.FilterBy(x => x.Members.Contains(_currentUser.Id.ToString()), x => x.Id);
             return res.Select(x => x.ToString()).ToList();
         }
 
         public List<UserInfo> GetUsers(string request, int limit)
         {
-            List<User> searchResult = _usersRepository.FilterByLimited(x => x.Login.Contains(request) || x.FirstName.Contains(request) || x.LastName.Contains(request), limit).ToList();
+            List<User> searchResult = _usersRep.FilterByLimited(x => x.Login.Contains(request) || x.FirstName.Contains(request) || x.LastName.Contains(request), limit).ToList();
             List<UserInfo> casted = searchResult.ConvertAll(x => new UserInfo(x.Id.ToString(), x.Login, x.FirstName, x.LastName, x.BirthDate));
             
             return casted.Where(x => x.UserId != _currentUser.Id.ToString()).ToList();
@@ -158,7 +159,7 @@ namespace MyMessengerBackend.DatabaseModule
 
         public UserInfo GetUserById(string id)
         {
-            var res = _usersRepository.FindById(id);
+            var res = _usersRep.FindById(id);
             return new UserInfo(res.Id.ToString(), res.Login, res.FirstName, res.LastName, res.BirthDate);
         }
 
@@ -172,25 +173,25 @@ namespace MyMessengerBackend.DatabaseModule
                     idsObj.Add(new ObjectId(id));
                 } 
             }
-            var res = _usersRepository.FilterBy(x => idsObj.Contains(x.Id));
+            var res = _usersRep.FilterBy(x => idsObj.Contains(x.Id));
             return res.Select(x => new UserInfo(x.Id.ToString(), x.Login, x.FirstName, x.LastName, x.BirthDate)).ToList();
         }
 
 
         public bool LeavePublicChat(string chatId)
         {
-            var members = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Members).FirstOrDefault().Where(x => x != _currentUser.Id.ToString()).ToArray();
-            _chatsRepository.UpdateOne<IEnumerable<string>>(chatId, "Members", members);
+            var members = _chatsRep.FilterBy(x => x.Id == new ObjectId(chatId), x => x.Members).FirstOrDefault().Where(x => x != _currentUser.Id.ToString()).ToArray();
+            _chatsRep.UpdateOne<IEnumerable<string>>(chatId, "Members", members);
             return true;
         }
 
         public (bool, string) ExcludeMemberFromPublicChat(string chatId, string memberId)
         {
-            Chat adminIdAndMembers = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => new Chat() {Admin = x.Admin, Members = x.Members }).FirstOrDefault();
+            Chat adminIdAndMembers = _chatsRep.FilterBy(x => x.Id == new ObjectId(chatId), x => new Chat() {Admin = x.Admin, Members = x.Members }).FirstOrDefault();
             if(_currentUser.Id.ToString() == adminIdAndMembers.Admin)
             {
                 var updatedMembers = adminIdAndMembers.Members.Where(x => x != memberId);
-                _chatsRepository.UpdateOne(chatId, "Members", updatedMembers);
+                _chatsRep.UpdateOne(chatId, "Members", updatedMembers);
                 var member = GetUserById(memberId);
                 return (true, $"{member.FirstName} { member.LastName}");
             }
@@ -199,12 +200,12 @@ namespace MyMessengerBackend.DatabaseModule
 
         public (bool, string) AddMemberToPublicChat(string chatId, string newMemberId)
         {
-            Chat adminIdAndMembers = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => new Chat() { Admin = x.Admin, Members = x.Members }).FirstOrDefault();
+            Chat adminIdAndMembers = _chatsRep.FilterBy(x => x.Id == new ObjectId(chatId), x => new Chat() { Admin = x.Admin, Members = x.Members }).FirstOrDefault();
             if (_currentUser.Id.ToString() == adminIdAndMembers.Admin)
             {
                 var updatedMembers = adminIdAndMembers.Members;
                 updatedMembers.Add(newMemberId);
-                _chatsRepository.UpdateOne(chatId, "Members", updatedMembers);
+                _chatsRep.UpdateOne(chatId, "Members", updatedMembers);
                 var newMember = GetUserById(newMemberId);
                 return (true, $"{newMember.FirstName} { newMember.LastName}");
             }
@@ -213,10 +214,10 @@ namespace MyMessengerBackend.DatabaseModule
 
         public (bool, string) TranferAdminRightsToUser(string chatId, string memberId)
         {
-            Chat adminIdAndMembers = _chatsRepository.FilterBy(x => x.Id == new ObjectId(chatId), x => new Chat() { Admin = x.Admin, Members = x.Members }).FirstOrDefault();
+            Chat adminIdAndMembers = _chatsRep.FilterBy(x => x.Id == new ObjectId(chatId), x => new Chat() { Admin = x.Admin, Members = x.Members }).FirstOrDefault();
             if (_currentUser.Id.ToString() == adminIdAndMembers.Admin && adminIdAndMembers.Members.Contains(memberId))
             {
-                _chatsRepository.UpdateOne(chatId, "Admin", memberId);
+                _chatsRep.UpdateOne(chatId, "Admin", memberId);
                 var newAdmin = GetUserById(memberId);
                 return (true, $"{newAdmin.FirstName} { newAdmin.LastName}");
             }

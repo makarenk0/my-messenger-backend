@@ -48,6 +48,7 @@ namespace ServiceModule
                 var sendedToUsers = _userController.SendMessageToChat(e.ChatId,
                     new Message() { Id = ObjectId.GenerateNewId(), Sender = "System", 
                         Body = $"Member {_userController.User.FirstName + " " + _userController.User.LastName} left the chat" });
+                sendedToUsers.Add(_userController.User.Id.ToString());
                 return (true, sendedToUsers);
             }
 

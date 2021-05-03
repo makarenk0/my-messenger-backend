@@ -13,6 +13,11 @@
 		">v >a * (weather)": "/weather",
 
 
+		">v (remind) * (to)": "/reminder >v to",
+		">v (remind) * (me) * (to)": "/reminder >v me to",
+
+
+
 		"* (hello|hi|hey)": "Hello!|hi|Greetings|Hey)",
 		"* (yes)": "That's awesome!|)|(",
 		"* (no)": "That's great!|)|(",

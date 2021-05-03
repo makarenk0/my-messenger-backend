@@ -1,4 +1,5 @@
-﻿using MyMessengerBackend.DatabaseModule;
+﻿using DatabaseModule.Entities;
+using MyMessengerBackend.DatabaseModule;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -12,6 +13,7 @@ namespace DatabaseModule
     {
         public static readonly IMongoRepository<User> UsersRepository;
         public static readonly IMongoRepository<Chat> ChatsRepository;
+        public static readonly IMongoRepository<AssistantDB> AssistantDBRepository;
 
         static RepositoryService()
         {
@@ -21,6 +23,7 @@ namespace DatabaseModule
 
             UsersRepository = new MongoRepository<User>(_dbSettings);
             ChatsRepository = new MongoRepository<Chat>(_dbSettings);
+            AssistantDBRepository = new MongoRepository<AssistantDB>(_dbSettings);
         }
     }
 }

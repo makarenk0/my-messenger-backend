@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using DatabaseModule;
+using DatabaseModule.Entities;
 
 namespace MyMessengerBackend.DatabaseModule
 {
@@ -19,6 +19,8 @@ namespace MyMessengerBackend.DatabaseModule
 
         private IMongoRepository<User> _usersRep;
         private IMongoRepository<Chat> _chatsRep;
+        private IMongoRepository<AssistantDB> _assistantDB;
+
 
         public User User
         {
@@ -28,10 +30,11 @@ namespace MyMessengerBackend.DatabaseModule
             }
         }
 
-        public UserController(IMongoRepository<User> usersRep, IMongoRepository<Chat> chatsRep)
+        public UserController(IMongoRepository<User> usersRep, IMongoRepository<Chat> chatsRep, IMongoRepository<AssistantDB> assistantDB)
         {
             _usersRep = usersRep;
             _chatsRep = chatsRep;
+            _assistantDB = assistantDB;
         }
 
         public StatusResponsePayload Register(RegistrationPayload payload)
@@ -72,6 +75,8 @@ namespace MyMessengerBackend.DatabaseModule
 
             Message firstAssistantMessage = new Message() { Id = ObjectId.GenerateNewId(), Body = "Hello, I am your virtual assistant!", Sender = "assistant" };
             Chat assistantChat = new Chat() { ChatName = "Virtual assistant", IsGroup = false, Members = new List<string>() { userId }, Messages = new List<Message>() { firstAssistantMessage } };
+
+            _assistantDB.InsertOne(new AssistantDB() { UserId = userId, Reminders = new List<Reminder>() });
             return AddChat(assistantChat);
         }
 
@@ -224,6 +229,25 @@ namespace MyMessengerBackend.DatabaseModule
             return (false, null);
         }
 
+
+        public List<Reminder> GetActiveReminders()
+        {
+            var assistantData = _assistantDB.FindOne(x => x.UserId == _currentUser.Id.ToString());
+            return assistantData.Reminders;
+        }
+
+        public void CreateReminder(Reminder rem)
+        {
+            var id = _assistantDB.FilterBy(x => x.UserId == _currentUser.Id.ToString(), y => y.Id);
+            _assistantDB.UpdateOneArray(id.First().ToString(), "Reminders", rem);
+        }
+
+        public void RemoveReminder(Reminder rem)
+        {
+            var assistantData = _assistantDB.FindOne(x => x.UserId == _currentUser.Id.ToString());
+            var currentReminders = assistantData.Reminders.Where(x => x.Id != rem.Id).ToList();
+            _assistantDB.UpdateOne<IEnumerable<Reminder>>(assistantData.Id.ToString(), "Reminders", currentReminders);
+        }
 
 
 

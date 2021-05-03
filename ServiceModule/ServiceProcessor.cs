@@ -49,11 +49,9 @@ namespace MyMessengerBackend.ServiceModule
 
         public ServiceProcessor(UserLoggedIn action)
         {
-            _userController = new UserController(RepositoryService.UsersRepository, RepositoryService.ChatsRepository);
+            _userController = new UserController(RepositoryService.UsersRepository, RepositoryService.ChatsRepository, RepositoryService.AssistantDBRepository);
             _userLoggedAction = action;
             _lastChatsData = new Dictionary<string, LastChatData>();
-
-            _virtualAssistant = new VirtualAssistantEntryPoint(ConfigurationManager.AppSettings["assistant_file"]);
 
             _publicChatEventsHandler = new PublicChatEventsHandler(_userController);
 
@@ -120,8 +118,15 @@ namespace MyMessengerBackend.ServiceModule
             {
                 _sessionToken = result.SessionToken;
                 _userLoggedAction(_userController.User.Id.ToString());
+                VirtualAssistantEntryPoint.UpdateActionFromAssistant updateActionFromAssistant = TriggerFromAssistant;
+                _virtualAssistant = new VirtualAssistantEntryPoint(ConfigurationManager.AppSettings["assistant_file"], _userController, updateActionFromAssistant);
             }
             return JsonSerializer.Serialize(result);
+        }
+
+        private void TriggerFromAssistant()
+        {
+            TriggerUsers(_userController.User.AssistantChatId, new List<string>() { _userController.User.Id.ToString() });
         }
 
         private string FindUsers(object request)

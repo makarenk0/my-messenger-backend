@@ -10,9 +10,9 @@ namespace VirtualAssistant
     public class WeatherForecastAPIWorker
     {
         private const string api_key = "5366cbefcc87eb47b5007c54e7ab73e7";
-        private const string get_current_weather = "http://api.openweathermap.org/data/2.5/weather?q=CURRENT_CITY&units=metric";
+        private const string get_current_weather = "https://api.openweathermap.org/data/2.5/weather?q=CURRENT_CITY&units=metric";
 
-        private const string get_weather_icon = "http://openweathermap.org/img/wn/ICON_ID@2x.png";
+        private const string get_weather_icon = "https://openweathermap.org/img/wn/ICON_ID@2x.png";
 
         public WeatherForecastAPIWorker()
         {

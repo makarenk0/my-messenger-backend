@@ -9,6 +9,8 @@ namespace MyMessengerBackend.DatabaseModule
 {
     public interface IMongoRepository<TDocument> where TDocument : IDocument
     {
+        IMongoCollection<TDocument> GetWholeCollection();
+
         IQueryable<TDocument> AsQueryable();
 
         IEnumerable<TDocument> FilterBy(

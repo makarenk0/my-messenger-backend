@@ -20,6 +20,7 @@ namespace ApplicationModule
             { '8', typeof(InitChatPayload) },
             { 'a', typeof(SendChatMessagePayload) },
             { 'p', typeof(PublicChatEventPayload) },
+            { 'd', typeof(DeleteMessagesPayload) },
         };
     }
 }

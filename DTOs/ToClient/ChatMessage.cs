@@ -7,11 +7,12 @@ namespace DTOs.ToClient
 {
     public class ChatMessage
     {
-        public ChatMessage(string id, string sender, string body)
+        public ChatMessage(string id, string sender, string body, bool isDeleted)
         {
             MessageId = id;
             Sender = sender;
             Body = body;
+            IsDeleted = isDeleted;
         }
 
 
@@ -20,6 +21,9 @@ namespace DTOs.ToClient
 
         [JsonPropertyName("Sender")]
         public string Sender { get; set; }
+
+        [JsonPropertyName("IsDeleted")]
+        public bool IsDeleted { get; set; }
 
         [JsonPropertyName("Body")]
         public string Body { get; set; }

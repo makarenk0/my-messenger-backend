@@ -70,10 +70,11 @@ namespace MyMessengerBackend.ServiceModule
             handlers.TryAdd('7', SubscribeOnUpdates);
             handlers.TryAdd('8', InitPublicChat);
             handlers.TryAdd('a', AssistantRequest);
+            handlers.TryAdd('d', DeleteMessageForUser);
             handlers.TryAdd('p', PublicChatEventHandle);
         }
 
-       
+        
 
         public (char, string) Process(char packetType, string payload)
         {
@@ -157,7 +158,11 @@ namespace MyMessengerBackend.ServiceModule
                 return JsonSerializer.Serialize(verifyResult.Item2);
             }
 
-            Message newMessage = new Message() { Id = ObjectId.GenerateNewId(), Sender = _userController.User.Id.ToString(), Body = send.Body };
+            Message newMessage = new Message() { 
+                Id = ObjectId.GenerateNewId(), 
+                Sender = _userController.User.Id.ToString(), 
+                Body = send.Body,
+                DeletedForUsers = new List<ObjectId>()};
 
             var sended = _userController.SendMessageToChat(send.ChatId, newMessage);
             TriggerUsers(send.ChatId, sended);
@@ -177,7 +182,8 @@ namespace MyMessengerBackend.ServiceModule
             Message newInitMessage = new Message() { 
                 Id = ObjectId.GenerateNewId(), 
                 Sender = _userController.User.Id.ToString(), 
-                Body = init.Body 
+                Body = init.Body,
+                DeletedForUsers = new List<ObjectId>()
             };
             Chat toAdd = new Chat() { 
                 Members = init.UserIds, 
@@ -189,7 +195,7 @@ namespace MyMessengerBackend.ServiceModule
 
 
             TriggerUsers(newChatId, toAdd.Members);
-            var message = new ChatMessage(toAdd.Messages[0].Id.ToString(), toAdd.Messages[0].Sender, toAdd.Messages[0].Body);
+            var message = new ChatMessage(toAdd.Messages[0].Id.ToString(), toAdd.Messages[0].Sender, toAdd.Messages[0].Body, false);
             return JsonSerializer.Serialize(new UpdateChatPayload(newChatId, true, toAdd.Members, message));
         }
 
@@ -226,7 +232,8 @@ namespace MyMessengerBackend.ServiceModule
             {
                 Id = ObjectId.GenerateNewId(),
                 Sender = "System",
-                Body = String.Concat(_userController.User.FirstName, " ", _userController.User.LastName, " created a group")
+                Body = String.Concat(_userController.User.FirstName, " ", _userController.User.LastName, " created a group"),
+                DeletedForUsers = new List<ObjectId>()
             };
             Chat toAddGroup = new Chat() { 
                 Members = initGroupChat.UserIds, 
@@ -270,6 +277,13 @@ namespace MyMessengerBackend.ServiceModule
                 return JsonSerializer.Serialize(new StatusResponsePayload("success", "Public event was executed"));
             }
             return JsonSerializer.Serialize(new StatusResponsePayload("error", "Can't proccess public event"));
+        }
+
+        private string DeleteMessageForUser(object request)
+        {
+            DeleteMessagesPayload deleteMessagesPayload = (DeleteMessagesPayload)request;
+            _userController.MarkMessagesAsDeleted(deleteMessagesPayload.ChatId, deleteMessagesPayload.MessagesIds.ConvertAll(x => new ObjectId(x)));
+            return JsonSerializer.Serialize(new StatusResponsePayload("success", "Messages were deleted"));
         }
 
 
@@ -332,7 +346,7 @@ namespace MyMessengerBackend.ServiceModule
                 {
                     chatName = wholeChat.ChatName;
                 }
-                var newMessagesPayload = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body));
+                var newMessagesPayload = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body, x.DeletedForUsers.Contains(_userController.User.Id)));
                 return new UpdateChatPayload(chatId, true, wholeChat.IsGroup, chatName, wholeChat.Members, wholeChat.Admin, newMessagesPayload);
             }
             else //get only new data (user already have local data)
@@ -351,7 +365,7 @@ namespace MyMessengerBackend.ServiceModule
                     _lastChatsData.Remove(chatId);
                 }
 
-                var newMessagesPayload = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body));
+                var newMessagesPayload = newMessages.ConvertAll(x => new ChatMessage(x.Id.ToString(), x.Sender, x.Body, x.DeletedForUsers.Contains(_userController.User.Id)));
                 return new UpdateChatPayload(chatId, false, updateChatData.Members, updateChatData.Admin, newMessagesPayload);  //retrieve members from database in case of new members added
             }
             

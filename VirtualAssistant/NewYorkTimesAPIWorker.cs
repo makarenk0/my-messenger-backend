@@ -31,13 +31,17 @@ namespace VirtualAssistant
             string imgUrl = "";
             if (media != null)
             {
-                imgUrl = media.ToArray()[0].ToObject<JObject>().GetValue("media-metadata").ToArray()[2].ToObject<JObject>().GetValue("url").ToString();
+                try
+                {
+                    imgUrl = media.ToArray()[0].ToObject<JObject>().GetValue("media-metadata").ToArray()[2].ToObject<JObject>().GetValue("url").ToString();
+                }
+                catch(Exception e)
+                {}
             }
             string articleUrl = article.GetValue("url").ToString();
 
             return String.Concat(title, ". \n", abstractDesc, " ", imgUrl, " ", articleUrl);
         }
-
 
         private string FormGetRequest()
         {

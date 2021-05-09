@@ -229,6 +229,28 @@ namespace MyMessengerBackend.DatabaseModule
             return (false, null);
         }
 
+        public bool MarkMessagesAsDeleted(string chatId, List<ObjectId> messagesIds)
+        {
+            var messagesToDelete = _chatsRep.FilterBy(x => x.Id == new ObjectId(chatId), x => new Chat() { Messages = x.Messages.Where(y => messagesIds.Contains(y.Id)).ToList() });
+            
+            foreach(var message in messagesToDelete.SingleOrDefault().Messages)
+            {
+                var filter = Builders<Chat>.Filter;
+                var studentIdAndCourseIdFilter = filter.And(
+                  filter.Eq(x => x.Id, new ObjectId(chatId)),
+                  filter.ElemMatch(x => x.Messages, c => c.Id == message.Id));
+                // find student with id and course id
+                var student = _chatsRep.GetWholeCollection().Find(studentIdAndCourseIdFilter).SingleOrDefault();
+
+                // update with positional operator
+                var update = Builders<Chat>.Update;
+                var courseLevelSetter = update.Push("Messages.$.DeletedForUsers", _currentUser.Id);
+                _chatsRep.GetWholeCollection().UpdateOne(studentIdAndCourseIdFilter, courseLevelSetter);
+            }
+            return true;
+            
+        }
+
 
         public List<Reminder> GetActiveReminders()
         {

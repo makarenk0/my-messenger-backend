@@ -14,6 +14,11 @@ namespace MyMessengerBackend.DatabaseModule
     {
         private readonly IMongoCollection<TDocument> _collection;
 
+        public IMongoCollection<TDocument> GetWholeCollection()
+        {
+            return _collection;
+        }
+
         public MongoRepository(MongoDbSettings settings)
         {
             var database = new MongoClient(settings.ConnectionString).GetDatabase(settings.DatabaseName);
@@ -159,6 +164,14 @@ namespace MyMessengerBackend.DatabaseModule
             UpdateDefinition<TDocument> update = Builders<TDocument>.Update.Push(field, m);
             _collection.FindOneAndUpdate(filter, update);
         }
+
+        //public void UpdateOneInnerArray(String id, String innerDocId, String field, IDocument m)
+        //{
+        //    FilterDefinition<TDocument> filter = Builders<TDocument>.Filter.Where(x => x.Id == new ObjectId(id));
+        //    FilterDefinition<TDocument> projection = 
+        //    UpdateDefinition<TDocument> update = Builders<TDocument>.Update.Push(field, m);
+        //    _collection.FindOneAndUpdate(filter, update);
+        //}
 
         public Task UpdateOneArrayAsync(String id, String field, IDocument m)
         {

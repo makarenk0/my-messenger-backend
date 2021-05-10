@@ -237,10 +237,11 @@ namespace VirtualAssistant
             _cutWords.Add(patternSign, new LinkedList<string>());
             foreach (string word in words)
             {
-                if (_wordsTypes[patternWordsType].Contains(patternSign == ">v" ? stemmer.Stem(word).Value : word))  // if verb stemming it
+                var stemmedIfVerb = patternSign == ">v" && word.Last() != 'e' ? stemmer.Stem(word).Value : word;
+                if (_wordsTypes[patternWordsType].Contains(stemmedIfVerb))  // if verb stemming it
                 {
                     output += patternSign + " ";
-                    _cutWords[patternSign].AddLast(patternSign == ">v" ? stemmer.Stem(word).Value : word);
+                    _cutWords[patternSign].AddLast(stemmedIfVerb);
                 }
                 else output += word + " ";
             }

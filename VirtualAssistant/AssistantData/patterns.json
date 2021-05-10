@@ -6,6 +6,9 @@
 		">s (how) * (about) * (new|news)": "/popular_news",
 		">s (how) * (about) * (some) * (new|news)": "/popular_news",
 
+		">v (change) * (news) * (source)": "/change_news_api",
+		"* (news) * (source)": "/change_news_api",
+
 		">s (what's) >p (i) >v (like) * (out)": "/weather",
 		">s (how's) >a * (weather)": "/weather",
 		">s (what's) >a * (weather)": "/weather",
@@ -16,6 +19,10 @@
 		">v (remind) * (to)": "/reminder >v to",
 		">v (remind) * (me) * (to)": "/reminder >v me to",
 
+		"* (todo) >v (finish|remove|delete|end|complete)": "/todo_remove todo >v",
+		"* (to) >v (do)": "/todo to do",
+		"* (todo:)": "/todo todo:",
+		"* (todo)": "/todo todo",
 
 
 		"* (hello|hi|hey)": "Hello!|hi|Greetings|Hey)",
@@ -114,9 +121,9 @@
 		"Commit","Communicate","Compare","Compete","Complain","Complete","Concern","Confirm","Consent","Consider","Consist",
 		"Consult","Contain","Continue","Convince","Cook","Cost","Count","Crawl","Create","Creep","Criticize","Cry","Cut",
 		"Dance","Dare","Deal","Decide","Defer","Delay","Deliver","Demand","Deny","Depend","Describe","Deserve","Desire",
-		"Destroy","Determine","Develop","Differ","Disagree","Discover","Discuss","Dislike","Distribute","Dive","Do", "Did", "Doubt",
+		"Destroy","Determine", "Delete","Develop","Differ","Disagree","Discover","Discuss","Dislike","Distribute","Dive","Do", "Did", "Doubt",
 		"Drag","Dream","Drill","Drink","Drive","Drop","Dry","Earn","Eat","Emphasize","Enable","Encourage","Engage","Enhance",
-		"Enjoy","Ensure","Entail","Enter","Establish","Examine","Exist","Expand","Expect","Experiment","Explain",
+		"Enjoy","Ensure","Entail","Enter","End","Establish","Examine","Exist","Expand","Expect","Experiment","Explain",
 		"Explore","Extend","Fail","Fall","Feed","Feel","Fight","Find","Finish","Fit","Fly","Fold","Follow","Forbid","Forget",
 		"Forgive","Freeze","Fry","Generate","Get","Give","Go","Grind","Grow","Hang","Happen","Hate","Have", "Has", "Had","Hear",
 		"Hesitate","Hide","Hit","Hold","Hop","Hope","Hug","Hurry","Hurt","Identify","Ignore","Illustrate","Imagine","Imply",
@@ -129,7 +136,7 @@
 		"Practice","Prefer","Prepare","Pretend","Prevent","Proceed","Promise","Propose","Protect","Prove","Pull","Punch","Pursue",
 		"Push","Put","Qualify","Quit","React","Read","Realize","Recall","Receive","Recollect","Recommend","Reduce","Refer",
 		"Reflect","Refuse","Regret","Relate","Relax","Relieve","Rely","Remain","Remember","Remind","Repair","Replace","Represent"
-		,"Require","Resent","Resist","Retain","Retire","Rid","Ride","Ring","Rise","Risk","Roast","Run","Sanction","Satisfy","Say"
+		,"Require","Resent","Resist", "Remove","Retain","Retire","Rid","Ride","Ring","Rise","Risk","Roast","Run","Sanction","Satisfy","Say"
 		,"Scrub","See","Seem","Sell","Send","Serve","Set","Settle","Sew","Shake","Shall","Shed","Shine","Shoot","Should","Show",
 		"Shrink","Shut","Sing","Sink","Sit","Ski","Sleep","Slice","Slide","Slip","Smell","Snore","Solve","Sow","Speak","Specify",
 		"Spell","Spend","Spill","Spit","Spread","Squat","Stack","Stand","Start","Steal","Stick","Sting","Stink","Stir","Stop",

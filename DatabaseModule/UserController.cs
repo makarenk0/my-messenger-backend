@@ -73,10 +73,19 @@ namespace MyMessengerBackend.DatabaseModule
         private string InitAssistantChat(string userId)
         {
 
-            Message firstAssistantMessage = new Message() { Id = ObjectId.GenerateNewId(), Body = "Hello, I am your virtual assistant!", Sender = "assistant" };
+            Message firstAssistantMessage = new Message() { 
+                Id = ObjectId.GenerateNewId(), 
+                Body = "Hello, I am your virtual assistant!", 
+                Sender = "assistant",
+                DeletedForUsers = new List<ObjectId>()
+            };
             Chat assistantChat = new Chat() { ChatName = "Virtual assistant", IsGroup = false, Members = new List<string>() { userId }, Messages = new List<Message>() { firstAssistantMessage } };
 
-            _assistantDB.InsertOne(new AssistantDB() { UserId = userId, Reminders = new List<Reminder>() });
+            _assistantDB.InsertOne(new AssistantDB() { 
+                UserId = userId,
+                ToDos = new List<ToDo>(),
+                Reminders = new List<Reminder>() 
+            });
             return AddChat(assistantChat);
         }
 
@@ -269,6 +278,59 @@ namespace MyMessengerBackend.DatabaseModule
             var assistantData = _assistantDB.FindOne(x => x.UserId == _currentUser.Id.ToString());
             var currentReminders = assistantData.Reminders.Where(x => x.Id != rem.Id).ToList();
             _assistantDB.UpdateOne<IEnumerable<Reminder>>(assistantData.Id.ToString(), "Reminders", currentReminders);
+        }
+
+
+        public string GetNewsApiVariant()
+        {
+            var assistantData = _assistantDB.FindOne(x => x.UserId == _currentUser.Id.ToString());
+            return assistantData.NewsApiVariant;
+        }
+
+        public void SetNewsApiVariant(string variant)
+        {
+            var id = _assistantDB.FilterBy(x => x.UserId == _currentUser.Id.ToString(), y => y.Id);
+            _assistantDB.UpdateOne(id.First().ToString(), "NewsApiVariant", variant);
+        }
+
+        public string GetTodoList()
+        {
+            var todos = _assistantDB.FilterBy(x => x.UserId == _currentUser.Id.ToString(), y => y.ToDos).SingleOrDefault();
+            string data = "";
+            int i = 1;
+            foreach(var item in todos)
+            {
+                data = String.Concat(data, i == 1 ? "": " \n", i.ToString(), ": ", item.ToDoContent);
+                ++i;
+            }
+            return data.Length == 0 ? "Nothing in your todo list. Type \"Todo ...\"" : data;
+        }
+
+        public void AddElementToTodoList(string content)
+        {
+            var id = _assistantDB.FilterBy(x => x.UserId == _currentUser.Id.ToString(), y => y.Id).SingleOrDefault();
+            ToDo toDo = new ToDo() { Id = ObjectId.GenerateNewId(), ToDoContent = content.ToLower() };
+            _assistantDB.UpdateOneArray(id.ToString(), "ToDos", toDo);
+        }
+
+        public bool FinishedElementTodoList(string content)
+        {
+            var todosAndId = _assistantDB.FilterBy(x => x.UserId == _currentUser.Id.ToString(), y => new { y.ToDos, y.Id }).SingleOrDefault();
+            var todos = todosAndId.ToDos.Where(x => x.ToDoContent != content.ToLower()).ToList();
+            _assistantDB.UpdateOne(todosAndId.Id.ToString(), "ToDos", todos);
+            return todos.Count != todosAndId.ToDos.Count;
+        }
+
+        public bool FinishedElementTodoList(int number)
+        {
+            var todosAndId = _assistantDB.FilterBy(x => x.UserId == _currentUser.Id.ToString(), y => new { y.ToDos, y.Id }).SingleOrDefault();
+            if(number > todosAndId.ToDos.Count || number < 1)
+            {
+                return false;
+            }
+            var todos = todosAndId.ToDos.Where(x => x.ToDoContent != todosAndId.ToDos.ElementAt(number-1).ToDoContent).ToList();
+            _assistantDB.UpdateOne(todosAndId.Id.ToString(), "ToDos", todos);
+            return todos.Count != todosAndId.ToDos.Count;
         }
 
 

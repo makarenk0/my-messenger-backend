@@ -1,10 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
+using System.Text.Json;
 
 namespace VirtualAssistant
 {
-    public class NewYorkTimesAPIWorker
+    public class NewYorkTimesAPIWorker : INewsLoader
     {
         private const string api_key = "lPrbpG3RTK9Yq0PCEpD0OqHIcgl5m8IT";
         private const string get_most_popular_articles = "https://api.nytimes.com/svc/mostpopular/v2/emailed/7.json";
@@ -40,7 +41,17 @@ namespace VirtualAssistant
             }
             string articleUrl = article.GetValue("url").ToString();
 
-            return String.Concat(title, ". \n", abstractDesc, " ", imgUrl, " ", articleUrl);
+            OGTag oGTag = new OGTag()
+            {
+                Title = title,
+                Description = abstractDesc,
+                Image = imgUrl,
+                Url = articleUrl
+            };
+            // Old version
+            //String.Concat(title, ". \n", abstractDesc, " ", imgUrl, " ", articleUrl)
+
+            return JsonSerializer.Serialize(oGTag);
         }
 
         private string FormGetRequest()

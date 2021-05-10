@@ -11,7 +11,8 @@ namespace DatabaseModule.Entities
     public class AssistantDB : Document
     {
         public string UserId { get; set; }
-
+        public string NewsApiVariant { get; set; }
+        public List<ToDo> ToDos { get; set; }
         public List<Reminder> Reminders { get; set; }
     }
 }

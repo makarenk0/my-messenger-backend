@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="MyMessengerBackend.NetworkModule.MainListener">
+    <Position X="6" Y="0.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAACAEgAAAAAAAAgAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MainListener.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MyMessengerBackend.NetworkModule.Program">
+    <Position X="1.75" Y="1" Width="3.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAAIAAAAAAAAAAAAAABABAAAAAA=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MyMessengerBackend.NetworkModule.ClientObject">
+    <Position X="10" Y="0.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgCAAAEAAAAAAAAIAAAABAAAABA=</HashCode>
+      <FileName>ClientObject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -27,6 +27,9 @@ namespace MyMessengerBackend.NetworkModule
             _listener.Start();
 
             int minWorker, minIOC;
+
+            ThreadPool.GetMaxThreads(out int maxT, out int work);
+            Console.WriteLine($"Max threads in pool: {maxT}");
             ThreadPool.GetMinThreads(out minWorker, out minIOC);
             ThreadPool.SetMinThreads(DEFAULT_PARALLEL_THREADS_NUM, minIOC);
             Console.WriteLine(String.Concat("Resetting default thread pool volume from ", minWorker, " to ", DEFAULT_PARALLEL_THREADS_NUM));

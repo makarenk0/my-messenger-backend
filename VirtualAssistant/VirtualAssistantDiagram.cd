@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="VirtualAssistant.CommandsHandler">
+    <Position X="0.75" Y="2.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAIAAAAAAAAAAAAAACAAABAAgAAIAAA=</HashCode>
+      <FileName>CommandsHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VirtualAssistant.FreeNewsApiWorker">
+    <Position X="4.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FreeNewsApiWorker.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.231" />
+  </Class>
+  <Class Name="VirtualAssistant.NewYorkTimesAPIWorker">
+    <Position X="6.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAABAAAAAEAAAAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>NewYorkTimesAPIWorker.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VirtualAssistant.HTTPWorker">
+    <Position X="8.25" Y="1" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>HTTPWorker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VirtualAssistant.PatternsFinder">
+    <Position X="8.75" Y="2.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAIEAgCAAAAAEAAAoAAACBAAJAAQAAAAAAFAA=</HashCode>
+      <FileName>PatternsFinder.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VirtualAssistant.RemindersWorker">
+    <Position X="12.25" Y="2.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>IABAAAAAAAIBAAABAAAQAAAAQEQAAAAAAAAAEAQARAA=</HashCode>
+      <FileName>RemindersWorker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VirtualAssistant.TODOWorker">
+    <Position X="4.25" Y="5.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAAAAAAAAAAAUAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>TODOWorker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="VirtualAssistant.INewsLoader">
+    <Position X="5" Y="1" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>INewsLoader.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

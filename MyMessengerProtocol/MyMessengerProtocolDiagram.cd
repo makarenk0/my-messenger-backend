@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="MyMessengerBackend.MyMessengerProtocol.Packet">
+    <Position X="0.5" Y="4.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAAAAABAAgAAQAAAgAAAAAAAABAAAEAAAAAA=</HashCode>
+      <FileName>Packet.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MyMessengerBackend.MyMessengerProtocol.PacketProcessor">
+    <Position X="3.5" Y="1" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAICAAABAAAAAAAAAgQAACAABAAEAAAABAAAgAAgAAA=</HashCode>
+      <FileName>PacketProcessor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MyMessengerBackend.MyMessengerProtocol.PublicKeyPayload">
+    <Position X="4" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PublicKeyPayload.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MyMessengerBackend.MyMessengerProtocol.Recognizer">
+    <Position X="0.5" Y="1" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAABAACAAAgCAACAAAAAAAAAAAAACAAAgAAA=</HashCode>
+      <FileName>Recognizer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MyMessengerBackend.MyMessengerProtocol.AesBase64Wrapper">
+    <Position X="6.75" Y="1" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>QIAAAAAEAAACACAAAIAIAAAAAAAAAAAAAAgAACAAAAA=</HashCode>
+      <FileName>AesBase64Wrapper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

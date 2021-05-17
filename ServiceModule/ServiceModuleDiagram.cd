@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ApplicationModule.ObjectTypeMapper">
+    <Position X="3" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ObjectTypeMapper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ServiceModule.PublicChatEventsHandler">
+    <Position X="11" Y="3" Width="2.75" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Delegate Name="ServiceModule.PublicChatEventsHandler.HandleEvent" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>PublicChatEventsHandler.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAEAAAAEAAAAIAAAAAQABgAAQAAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>PublicChatEventsHandler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MyMessengerBackend.ServiceModule.ServiceProcessor">
+    <Position X="5.75" Y="0.5" Width="4.5" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Delegate Name="MyMessengerBackend.ServiceModule.ServiceProcessor.UserLoggedIn">
+        <TypeIdentifier>
+          <NewMemberFileName>ServiceProcessor.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+      <Delegate Name="MyMessengerBackend.ServiceModule.ServiceProcessor.UpdateAction">
+        <TypeIdentifier>
+          <NewMemberFileName>ServiceProcessor.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+      <Delegate Name="MyMessengerBackend.ServiceModule.ServiceProcessor.InputProcess">
+        <TypeIdentifier>
+          <NewMemberFileName>ServiceProcessor.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>gBACAAAIgAzAAAEAAiAQIAUCAAAQBBBACAGAIAAEGIQ=</HashCode>
+      <FileName>ServiceProcessor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

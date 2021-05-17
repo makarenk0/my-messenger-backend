@@ -15,7 +15,7 @@ namespace VirtualAssistant
         private CommandsHandler _commandsHandler;
         private PatternsFinder _patternsFinder;
 
-        private enum State { none, WaitingForCity_weather, WaitingForTime_reminder, WaitingForApiSelect_news}
+        private enum State { none, WaitingForCity_weather, WaitingForTime_reminder, WaitingForApiSelect_news, WaitingForRemoveAgreement_todo}
 
         private State _currentState;
 
@@ -25,6 +25,8 @@ namespace VirtualAssistant
         private TODOWorker _todosWorker;
 
         private string _reminderContent;
+
+        private string _todoToRemove;
 
         public delegate void UpdateActionFromAssistant();
 
@@ -53,16 +55,19 @@ namespace VirtualAssistant
 
         public string Process(string input)
         {
-            if (!input.Contains('.'))
-            {
-                return ProcessOneSentence(input);
-            }
+            //if (!input.Contains('.'))
+            //{
+            //    return ProcessOneSentence(input);
+            //}
 
             string complexAnswer = "";
-            var sentences = input.Split('.'); 
+            var sentences = input.Split('.', '?', '!', ',', ';').Where(x => !String.IsNullOrWhiteSpace(x)).ToArray(); 
             foreach(var sentence in sentences)
             {
-                complexAnswer = String.Concat(complexAnswer, ProcessOneSentence(sentence), ". ");
+                if (!String.IsNullOrWhiteSpace(sentence))
+                {
+                    complexAnswer = String.Concat(complexAnswer, ProcessOneSentence(sentence), sentences.Length == 1 ? "": ". ");
+                }
             }
             return complexAnswer;
         }
@@ -97,6 +102,18 @@ namespace VirtualAssistant
                 case State.WaitingForApiSelect_news:
                     _currentState = State.none;
                     return ChooseApiForNews(input);
+                case State.WaitingForRemoveAgreement_todo:
+                    _currentState = State.none;
+                    if (input.ToLower() == "yes" || input.ToLower() == "ok")
+                    {
+                        return _todosWorker.RemoveTodo(String.Join(' ', _todoToRemove.Split(' ').Skip(1)));
+                    }
+                    else if(input.ToLower() == "no")
+                    {
+                        _todosWorker.AddItemToList(_todoToRemove);
+                        return "New todo was added!";
+                    }
+                    return "Can't understand you";
                 default:
                     return "none";
             }
@@ -168,7 +185,14 @@ namespace VirtualAssistant
                    
                     var content = splittedInputR.Where(x => x != commandArgsR[0]).Where(y => y != commandArgsR[1]);
                     bool isNum = int.TryParse(content.First(), out int result);
-                    return isNum ? _todosWorker.RemoveTodo(result) : _todosWorker.RemoveTodo(String.Join(' ', content));
+
+                    if (!isNum)
+                    {
+                        _todoToRemove = commandArgsR[1]+ " " + String.Join(' ', content);
+                        _currentState = State.WaitingForRemoveAgreement_todo;
+                        return $"Do you want to remove \"{_todoToRemove}\" from your todo list? Send \"yes\" or \"no\" if you want to add such task.";
+                    }
+                    return _todosWorker.RemoveTodo(result);
                     
                 default:
                     return "Unrecognized command, check patterns.json";

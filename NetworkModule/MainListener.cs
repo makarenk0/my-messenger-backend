@@ -19,10 +19,12 @@ namespace MyMessengerBackend.NetworkModule
 
         public MainListener(int port, string ipAddress)
         {
+            Console.WriteLine($"Server for mobile clients working on ip adress: {ipAddress}");
             _port = port;
             _ipAddress = ipAddress;
 
             IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse(_ipAddress), _port);
+            
             _listener = new TcpListener(IPAddress.Parse(_ipAddress), _port);//new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _listener.Start();
 

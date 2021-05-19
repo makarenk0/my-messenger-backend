@@ -1,7 +1,10 @@
 ﻿
 using MyMessengerBackend.ServiceModule;
+using System;
 using System.Collections.Concurrent;
 using System.Configuration;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using WebsocketAdapter;
 

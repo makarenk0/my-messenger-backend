@@ -20,7 +20,7 @@ namespace WebsocketAdapter
 
         public MainWebsocketListener(int port, string ipAddress)
         {
-           
+            Console.WriteLine($"Web socket working on ip adress:   {ipAddress}");
 
             //X509Certificate2 certificate = new X509Certificate2("C:\\test.com.pfx", "14032001");
             
